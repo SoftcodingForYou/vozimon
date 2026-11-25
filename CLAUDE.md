@@ -7,7 +7,9 @@ classic Game Boy monster-collecting games. All creatures, names, art, sounds and
 
 ## Product requirements (from the client)
 
-- Two modes, chosen when starting a new game:
+- Two modes, chosen when starting a new game. The choice is hidden for now (`SHOW_MODE_CHOICE` in
+  `NewGame.tsx`): new games are always Normal and go straight from the name to the map; games saved
+  in Fácil keep playing as Fácil.
   - **Normal**: free roaming in an open world with an empty Vozidex plus one starter companion
     (choice of three). Wild Vozimón are chased and met in the world. To fight, the child picks
     one of their caught creatures from a list (name + picture). Fights are turn-based, each
@@ -138,6 +140,8 @@ classic Game Boy monster-collecting games. All creatures, names, art, sounds and
   input handlers, key capture, keyboard/touch/gamepad source), `audio.ts` (Web Audio SFX, per-type
   attack sounds, original chiptunes), `files.ts` (save-to-folder / pick-a-file dialogs), `listen.ts`
   (speech recognition for reading names out loud).
+- `brand/` – the logo from the Vozimón brand package (title screen, README). The icons from the same
+  package are in `public/` (favicon, apple-touch-icon, `manifest.webmanifest` icons).
 - `components/` – React screens: TitleScreen, SlotMenu, NewGame, Play (saving/resuming, HUD),
   WorldView, Battle, AttackFx (signature attack effects + KO stars; shapes in `fxParticles.tsx`),
   AttackShowcase (`?demo=attacks`, seekable for recording), CreaturePicker, Dex, ReadAloud
@@ -152,6 +156,12 @@ classic Game Boy monster-collecting games. All creatures, names, art, sounds and
   (`vozimon`) and the `vozimon.` storage keys stay ASCII. The game was called Edumón before (and
   Educatiomon before that): saves under `edumon.`/`educatiomon.` keys move to `vozimon.` on start
   (`migrateOldSaves`); don't drop that. The secret code `eduboss` kept its old name.
+- Brand look: use the colour tokens in `:root` (`styles.css`): ink outlines, paper, orange
+  (`--orange`, "Vozi", the voice, so reading aloud uses it: the "Leer" button is its speech bubble), blue,
+  star yellow/gold, pink, sky and grass. The sticker style is an ink outline plus a solid ink copy
+  just below (`--depth` for boxes, `--lettering` for big titles). The logo is an image: never
+  redraw, recolour or retype it. The manifest keeps `display: browser` because an iOS home-screen
+  app gets storage of its own and wouldn't see the saved games.
 - All player-facing text is Spanish, short and encouraging. There is no voice-over (the client
   removed text-to-speech because it didn't sound human); don't add it back.
 - Every screen/overlay listens with `useInput(handler, LAYER.x)`; the highest layer wins.

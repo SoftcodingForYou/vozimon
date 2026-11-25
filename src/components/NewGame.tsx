@@ -23,6 +23,9 @@ interface Props {
   onCreate: (r: NewGameResult) => void;
 }
 
+/** The Normal / Fácil choice is hidden for now: new games are Normal (Fácil games still play). */
+const SHOW_MODE_CHOICE = false;
+
 export function NewGame({ slots, onCancel, onCreate }: Props) {
   const [step, setStep] = useState<'name' | 'mode' | 'map' | 'avatar' | 'starter'>('name');
   const [name, setName] = useState('');
@@ -38,7 +41,7 @@ export function NewGame({ slots, onCancel, onCreate }: Props) {
         onCancel={onCancel}
         onDone={(n) => {
           setName(n);
-          setStep('mode');
+          setStep(SHOW_MODE_CHOICE ? 'mode' : 'map');
         }}
       />
     );
@@ -59,7 +62,7 @@ export function NewGame({ slots, onCancel, onCreate }: Props) {
     return (
       <MapSelect
         initial={map}
-        onBack={() => setStep('mode')}
+        onBack={() => setStep(SHOW_MODE_CHOICE ? 'mode' : 'name')}
         onDone={(m) => {
           setMap(m);
           setStep('avatar');

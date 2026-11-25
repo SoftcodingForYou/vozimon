@@ -2,7 +2,8 @@ import { useEffect } from 'react';
 import { useInput } from '../system/input';
 import { playMusic, sfx } from '../system/audio';
 import { ballURL, genericURL } from '../art/assets';
-import { LAYER, A, Bb, Qq, Ee, Tt, Mm, DirKeys } from './ui';
+import { LAYER, A, Bb, Qq, Ee, Tt, Mm, DirKeys, Sparkle } from './ui';
+import logoURL from '../brand/vozimon-logo.svg';
 
 export function TitleScreen({ onStart }: { onStart: () => void }) {
   useEffect(() => {
@@ -26,13 +27,13 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
         <div className="cloud c3" />
         <div className="hill h1" />
         <div className="hill h2" />
+        <Sparkle className="sparkle s1" color="var(--pink)" />
+        <Sparkle className="sparkle s2" color="var(--paper)" />
+        <Sparkle className="sparkle s3" color="var(--star)" />
+        <Sparkle className="sparkle s4" color="var(--paper)" />
       </div>
       <h1 className="logo">
-        {'VOZIMÓN'.split('').map((ch, i) => (
-          <span key={i} style={{ animationDelay: `${i * 0.08}s` }}>
-            {ch}
-          </span>
-        ))}
+        <img src={logoURL} alt="Vozimón" draggable={false} />
       </h1>
       <p className="subtitle">¡Explora, encuentra y atrapa a los 151!</p>
       <div className="title-critters">

@@ -283,18 +283,19 @@ export function playerFrames(av: Avatar): Record<Dir, PixelImage[]> {
 
 // ------------------------------------------------------------------- star ball
 
+// The brand's star ball in pixels: ink outline, gold crescent bottom right, a shine top left.
 const BALL = [
   '................',
   '.....oooooo.....',
   '...ooyyyyyyoo...',
-  '..oyhhyyyyyyyo..',
-  '.oyhhyyywyyyyYo.',
-  '.oyhyyyywyyyyYo.',
+  '..oyyhyyyyyyyo..',
+  '.oyyhhyywyyyyYo.',
+  '.oyhhyywwwyyyYo.',
+  'oyyyywwwwwwwyyYo',
   'oyyyyywwwwwyyyYo',
-  'oyyyyyywwwyyyyYo',
-  'oyyyyyywwwyyyyYo',
-  'oyyyyywyyywyyYYo',
-  '.oyyyyyyyyyyyYo.',
+  'oyyyyywwwwwyyyYo',
+  'oyyyyywwywwyyYYo',
+  '.oyyyywyyywyyYo.',
   '.oyyyyyyyyyyYYo.',
   '..oyyyyyyyyYYo..',
   '...ooYYYYYYoo...',
@@ -305,7 +306,7 @@ const BALL = [
 export function ballSprite(grey = false): PixelImage {
   const pal = grey
     ? { o: '#5a5a6a', y: '#c8c8d0', Y: '#9a9aa8', h: '#e8e8f0', w: '#ffffff' }
-    : { o: '#3a2410', y: '#f8d038', Y: '#e09020', h: '#fff8b0', w: '#ffffff' };
+    : { o: '#2a2238', y: '#f8d038', Y: '#e09020', h: '#fffdf4', w: '#ffffff' };
   return fromStrings(BALL, pal);
 }
 

@@ -1,0 +1,14 @@
+{
+  "name": "Vozimón",
+  "short_name": "Vozimón",
+  "description": "Un juego educativo en español para peques. Explora, encuentra y atrapa 151 criaturas.",
+  "lang": "es",
+  "start_url": "./",
+  "display": "browser",
+  "background_color": "#241c38",
+  "theme_color": "#241c38",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

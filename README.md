@@ -1,3 +1,5 @@
+<p align="center"><img src="src/brand/vozimon-logo.svg" alt="Vozimón" width="480"></p>
+
 # Vozimón
 
 Juego educativo en español para peques de 4 a 6 años: explora el mundo, encuentra y atrapa a los
@@ -28,7 +30,7 @@ The production build is a static site (`dist/`) and can be hosted on any web ser
 - **Leer en voz alta**: en la página del Vozidex de un Vozimón atrapado, el niño pulsa «Leer» y lee su nombre al micrófono (al atraparlo por primera vez hay que leerlo una vez para seguir; después se puede practicar en el Vozidex). También se pueden practicar los Vozimón que solo se han visto. Si lo lee bien, gana una estrella; si no, el nombre aparece en sílabas de colores para intentarlo otra vez (con la ✕ de la esquina se deja para otro momento; después de atraparlo aparece tras 5 intentos). Funciona en Chrome, Edge y Safari; donde no se puede escuchar (Firefox, sin permiso para el micrófono) un adulto confirma con «Lo leyó bien». El navegador puede enviar la voz a Google o Apple para entenderla; se puede apagar en *Ajustes → Leer en voz alta*.
 - On tablets and phones, on-screen arrows and ✓ (aceptar) / ✗ (volver) buttons appear (tap «Menú» / «Vozidex» / «Tipos» / «Mapa» in the corner). Gamepads work too.
 - **Modo normal**: elige un compañero, lucha con tus Vozimón (un ataque cada uno, por turnos) y, si ganas, ¡atrápalo con la bola estrella! Los Vozimón que más luchan salen primero en la lista, con sus victorias / combates en la esquina.
-- **Modo fácil**: sin peleas, solo lanza la bola estrella. Cuanto más alto el número en el Vozidex, más difícil es atraparlo.
+- **Modo fácil** (por ahora no se ofrece al crear una partida; las partidas fáciles que ya existen siguen funcionando): sin peleas, solo lanza la bola estrella. Cuanto más alto el número en el Vozidex, más difícil es atraparlo.
 - Al crear una partida eliges el mapa:
   - **Estaciones**: volcanes, playa, nieve, bosque, lago y río.
   - **Santiago**: un Santiago de Chile imaginario. Cada comuna tiene su tipo: Recoleta (Fantasma, el Cementerio General), Ñuñoa (Lucha, el Estadio Nacional), Pudahuel (Aire, el aeropuerto), Lo Barnechea (Hielo, Farellones), Cajón del Maipo (Fuego, el volcán San José), Estación Central (Eléctrico), Quinta Normal (Dragón, el museo), Providencia (Magia, el cerro San Cristóbal), Vitacura (Agua), La Florida (Planta), La Pintana (Bicho), Puente Alto (Roca) y Santiago Centro (Normal).

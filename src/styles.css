@@ -1,10 +1,33 @@
 :root {
-  --ink: #2a2238;
+  /* Brand palette (the Vozimón brand package; the logo lives in src/brand/) */
+  --ink: #2a2238; /* every outline */
+  --night: #241c38;
   --paper: #fffdf4;
   --paper-shade: #ebe2c8;
-  --sel: #ffd94a;
+  --orange: #ff7a3d; /* "Vozi": the speech bubble, i.e. the voice (reading aloud) */
+  --blue: #3f8ef0; /* "món" */
+  --blue-dark: #3a76c8;
+  --star: #f8d038; /* the star ball */
+  --gold: #e09020;
+  --pink: #f07fc0;
+  --sky: #4aa8f2;
+  --sky-light: #a8e0ff;
+  --grass: #8ed060;
+  --grass-dark: #6aba4a;
+  --sel: var(--star);
   --good: #4cd04c;
   --bad: #e44a40;
+  /* the brand's sticker look: a solid ink copy just below each shape and letter */
+  --depth: 0 5px 0 var(--ink);
+  --lettering:
+    -2px -2px 0 var(--ink),
+    0 -2px 0 var(--ink),
+    2px -2px 0 var(--ink),
+    -2px 0 0 var(--ink),
+    2px 0 0 var(--ink),
+    -2px 2px 0 var(--ink),
+    2px 2px 0 var(--ink),
+    0 5px 0 var(--ink);
 }
 
 * {
@@ -19,7 +42,7 @@ body,
 }
 
 body {
-  background: #241c38;
+  background: var(--night);
   color: var(--ink);
   font-family: 'Jersey 10', 'Trebuchet MS', system-ui, sans-serif;
   font-synthesis: none;
@@ -66,7 +89,9 @@ body {
 }
 
 /* Ajustes → Mayúsculas: every text in capital letters (the first letters children learn). */
-.stage.upper {
+.stage.upper,
+.stage.upper button {
+  /* browsers reset text-transform on buttons, so name them too */
   text-transform: uppercase;
 }
 
@@ -148,19 +173,15 @@ body {
   flex-direction: column;
   align-items: center;
   padding: 18px 24px 46px;
-  background: linear-gradient(#7cc8ff, #c8ecff 62%, #9ee08a 62%, #7cc85a);
+  background: linear-gradient(var(--sky), var(--sky-light) 62%, var(--grass) 62%, var(--grass-dark));
 }
 
 .screen-title {
   margin: 4px 0 14px;
   font-size: calc(50px * var(--fs, 1));
-  color: #fff;
+  color: var(--paper);
   text-align: center;
-  text-shadow:
-    3px 3px 0 var(--ink),
-    -2px -2px 0 var(--ink),
-    2px -2px 0 var(--ink),
-    -2px 2px 0 var(--ink);
+  text-shadow: var(--lettering);
 }
 
 .panel {
@@ -169,7 +190,7 @@ body {
   border-radius: 14px;
   box-shadow:
     inset 0 -5px 0 var(--paper-shade),
-    0 5px 0 rgba(42, 34, 56, 0.35);
+    var(--depth);
 }
 
 .menu {
@@ -221,7 +242,9 @@ body {
   background: var(--paper);
   border: 4px solid var(--ink);
   border-radius: 14px;
-  box-shadow: inset 0 -5px 0 var(--paper-shade);
+  box-shadow:
+    inset 0 -5px 0 var(--paper-shade),
+    var(--depth);
   font-size: calc(37px * var(--fs, 1));
   line-height: 1.25;
   cursor: pointer;
@@ -278,7 +301,7 @@ body {
 }
 
 .btn-b {
-  background: #3a72e0;
+  background: var(--blue);
 }
 
 .type-badge {
@@ -350,7 +373,7 @@ body {
   gap: 10px;
   overflow: hidden;
   cursor: pointer;
-  background: linear-gradient(#5ab8f8, #a8e0ff 58%, #8ed060 58%, #6aba4a);
+  background: linear-gradient(var(--sky), var(--sky-light) 58%, var(--grass) 58%, var(--grass-dark));
 }
 
 .sky {
@@ -389,50 +412,73 @@ body {
   animation-delay: -19s;
 }
 
+/* two soft hills, as on the app icon (they run down to the bottom edge) */
 .hill {
   position: absolute;
-  bottom: 180px;
-  border-radius: 50% 50% 0 0;
-  background: #7cc85a;
-  border-top: 4px solid #4a9a3a;
+  bottom: 0;
+  border-radius: 50% 50% 0 0 / 150px 150px 0 0;
 }
 
 .hill.h1 {
-  left: -60px;
-  width: 360px;
-  height: 120px;
+  left: -140px;
+  width: 560px;
+  height: 300px;
+  background: var(--grass);
 }
 
 .hill.h2 {
-  right: -80px;
-  width: 420px;
-  height: 90px;
+  right: -160px;
+  width: 600px;
+  height: 262px;
+  background: var(--grass-dark);
 }
 
+/* the brand logo (src/brand/vozimon-logo.svg): an image, so Mayúsculas and the letter style
+   never change it */
 .logo {
   z-index: 1;
-  margin: 0;
-  font-family: 'Jersey 10', 'Trebuchet MS', system-ui, sans-serif; /* the brand keeps its pixel look */
-  line-height: normal;
-  font-size: 136px;
-  font-weight: 700;
-  letter-spacing: 8px;
-  color: var(--sel);
-  text-shadow:
-    4px 0 var(--ink),
-    -4px 0 var(--ink),
-    0 4px var(--ink),
-    0 -4px var(--ink),
-    4px 4px var(--ink),
-    -4px 4px var(--ink),
-    4px -4px var(--ink),
-    -4px -4px var(--ink),
-    0 10px 0 rgba(0, 0, 0, 0.25);
+  margin: 0 0 4px;
+  line-height: 0;
+  animation: logoBob 2.4s ease-in-out infinite;
 }
 
-.logo span {
-  display: inline-block;
-  animation: wave 1.6s ease-in-out infinite;
+.logo img {
+  display: block;
+  width: 560px;
+  height: auto;
+}
+
+/* the brand's twinkling sparkles in the sky */
+.sparkle {
+  position: absolute;
+  animation: twinkle 1.8s ease-in-out infinite alternate;
+}
+.sparkle.s1 {
+  top: 28px;
+  right: 92px;
+  width: 50px;
+  height: 50px;
+}
+.sparkle.s2 {
+  top: 186px;
+  left: 30px;
+  width: 30px;
+  height: 30px;
+  animation-delay: -0.6s;
+}
+.sparkle.s3 {
+  top: 40px;
+  left: 64px;
+  width: 36px;
+  height: 36px;
+  animation-delay: -1.2s;
+}
+.sparkle.s4 {
+  top: 206px;
+  right: 40px;
+  width: 26px;
+  height: 26px;
+  animation-delay: -0.3s;
 }
 
 .subtitle {
@@ -481,6 +527,7 @@ body {
   background: var(--paper);
   border: 4px solid var(--ink);
   border-radius: 12px;
+  box-shadow: var(--depth);
 }
 
 .keys-help {
@@ -547,7 +594,7 @@ body {
 }
 
 .mode-badge.normal {
-  background: #f2683a;
+  background: var(--orange);
 }
 
 .mode-badge.easy {
@@ -734,7 +781,7 @@ body {
 
 .vs b {
   font-size: calc(50px * var(--fs, 1));
-  color: #f2c41e;
+  color: var(--star);
   text-shadow: 2px 2px 0 var(--ink);
 }
 
@@ -817,6 +864,7 @@ body {
   background: rgba(255, 253, 244, 0.92);
   border: 3px solid var(--ink);
   border-radius: 12px;
+  box-shadow: 0 3px 0 var(--ink);
 }
 
 .hud-menu {
@@ -838,6 +886,7 @@ body {
   background: var(--paper);
   border: 4px solid var(--ink);
   border-radius: 12px;
+  box-shadow: var(--depth);
   transform: translateX(-50%);
   animation: banner 2.6s ease forwards;
 }
@@ -876,7 +925,7 @@ body {
   position: absolute;
   inset: 0;
   z-index: 30;
-  background: linear-gradient(#3a8ad8, #2a62b0);
+  background: linear-gradient(var(--blue), var(--blue-dark));
 }
 
 .dex-header {
@@ -904,7 +953,8 @@ body {
 .dex-header h2 {
   margin: 0;
   font-size: calc(50px * var(--fs, 1));
-  text-shadow: 3px 3px 0 var(--ink);
+  color: var(--paper);
+  text-shadow: var(--lettering);
 }
 
 .dex-count {
@@ -943,6 +993,7 @@ body {
   background: var(--paper);
   border: 3px solid var(--ink);
   border-radius: 10px;
+  box-shadow: 0 4px 0 var(--ink);
   cursor: pointer;
 }
 
@@ -1011,6 +1062,7 @@ body {
   background: var(--paper);
   border: 4px solid var(--ink);
   border-radius: 16px;
+  box-shadow: var(--depth);
 }
 
 .dex-detail.unknown {
@@ -1090,25 +1142,54 @@ body {
   justify-content: center;
   gap: 10px;
 }
+/* "Leer" is the logo's orange speech bubble ("Vozi" = voice), tail and all */
 .read-btn {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-bottom: 18px;
   padding: 6px 20px;
   font: inherit;
   font-size: calc(34px * var(--fs, 1));
   font-weight: 700;
   color: var(--ink);
-  background: var(--paper);
+  background: var(--orange);
   border: 4px solid var(--ink);
   border-radius: 40px;
-  box-shadow: 0 4px 0 rgba(42, 34, 56, 0.35);
+  box-shadow:
+    inset 0 4px 0 rgba(255, 253, 244, 0.35),
+    var(--depth);
   cursor: pointer;
+}
+.read-btn::before,
+.read-btn::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+.read-btn::before {
+  left: 24px;
+  width: 34px;
+  height: 26px;
+  background: var(--ink);
+}
+.read-btn::after {
+  left: 28px;
+  width: 22px;
+  height: 17px;
+  background: var(--orange);
+}
+/* capitals are wider: stay within the portrait's width */
+.stage.upper .read-btn {
+  padding: 6px 14px;
+  font-size: calc(30px * var(--fs, 1));
 }
 /* selected: Action reads (until the name was read once, then chosen with up/down) */
 .read-btn.sel {
-  background: var(--sel);
-  outline: 4px solid #fff;
+  outline: 5px solid var(--sel);
+  outline-offset: 2px;
   animation: wave 1.6s ease-in-out infinite;
 }
 .read-btn:active {
@@ -1563,15 +1644,15 @@ body {
   inset: 0;
   z-index: 50;
   padding: 12px 18px;
-  background: #241c38;
+  background: var(--night);
 }
 
 .picker-title {
   margin: 0 0 8px;
   font-size: calc(42px * var(--fs, 1));
   text-align: center;
-  color: #fff;
-  text-shadow: 2px 2px 0 #000;
+  color: var(--paper);
+  text-shadow: 0 4px 0 #000;
 }
 
 .picker-grid {
@@ -1592,6 +1673,7 @@ body {
   background: var(--paper);
   border: 3px solid var(--ink);
   border-radius: 12px;
+  box-shadow: 0 4px 0 #000;
 }
 
 .pick-card img {
@@ -2026,8 +2108,26 @@ body {
     transform: scaleX(1);
   }
 }
+@keyframes logoBob {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1deg);
+  }
+}
+@keyframes twinkle {
+  from {
+    transform: scale(0.7) rotate(0deg);
+  }
+  to {
+    transform: scale(1.1) rotate(20deg);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
-  .logo span,
+  .logo,
+  .sparkle,
   .cloud,
   .critter,
   .title-ball,
@@ -2072,7 +2172,7 @@ body {
   background: #4a5a78 !important;
 }
 .btn-dex {
-  background: #e0882a !important;
+  background: var(--orange) !important;
 }
 .btn-t {
   display: inline-flex;
@@ -2160,7 +2260,7 @@ body {
   position: absolute;
   inset: 0;
   z-index: 30;
-  background: linear-gradient(#3a8ad8, #2a62b0);
+  background: linear-gradient(var(--blue), var(--blue-dark));
 }
 
 .tc-sub {
@@ -2187,6 +2287,7 @@ body {
   background: var(--paper);
   border: 4px solid var(--ink);
   border-radius: 14px;
+  box-shadow: var(--depth);
 }
 
 .tc-row {
@@ -2263,7 +2364,7 @@ body {
   justify-content: center;
   font-size: calc(26px * var(--fs, 1));
   line-height: 1;
-  color: #ffd94a;
+  color: var(--star);
   text-shadow:
     0 0 3px #000,
     1px 1px 0 var(--ink),
@@ -2683,7 +2784,7 @@ body {
   width: 24px;
   height: 24px;
   clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-  background: #ffd94a;
+  background: var(--star);
   filter: drop-shadow(1px 0 0 #2a2238) drop-shadow(-1px 0 0 #2a2238) drop-shadow(0 1px 0 #2a2238) drop-shadow(0 -1px 0 #2a2238);
   animation: koOrbit 1.2s linear infinite;
 }

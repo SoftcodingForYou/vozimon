@@ -386,6 +386,15 @@ export function BallIcon({ size = 24, grey = false }: { size?: number; grey?: bo
   return <img className="pix" src={ballURL(grey)} width={size} height={size} alt={grey ? 'no atrapado' : 'atrapado'} draggable={false} />;
 }
 
+/** The brand's four-pointed sparkle (ink outline), e.g. twinkling in the title sky. */
+export function Sparkle({ className, color, size = 40 }: { className?: string; color: string; size?: number }) {
+  return (
+    <svg className={className} width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 2 Q14.2 9.8 22 12 Q14.2 14.2 12 22 Q9.8 14.2 2 12 Q9.8 9.8 12 2 Z" fill={color} stroke="var(--ink)" strokeWidth="2" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 /** A little trophy cup, for the wins. */
 export function CupIcon({ size = 15 }: { size?: number }) {
   return (
