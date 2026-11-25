@@ -123,7 +123,7 @@ export function App() {
     if (!demo) saveSettings(s);
   };
 
-  /** Every change of the Edudex is written to storage right away. */
+  /** Every change of the Vozidex is written to storage right away. */
   const updateSlot = (id: string, fn: (s: SaveSlot) => SaveSlot) => {
     const cur = slotsRef.current.find((s) => s.id === id);
     if (!cur) return;

@@ -1,5 +1,5 @@
 // Records the presentation video of all 151 signature attacks (?demo=attacks) at normal speed,
-// with sound:  npm run record-attacks   ->  preview/edumon-ataques.mp4 (git-ignored)
+// with sound:  npm run record-attacks   ->  preview/vozimon-ataques.mp4 (git-ignored)
 //
 // How: a Vite dev server serves the game; headless Firefox opens the attack preview in capture
 // mode and steps every animation to each frame's moment (window.__fx.seek), so the result is
@@ -12,7 +12,7 @@
 //   WORKERS=4                  browsers recording in parallel
 //   FPS=25                     frames per second (each attack's 2.6 s slot must be a whole number of frames)
 //   FROM=1 TO=151              record only some attacks (e.g. to check a few)
-//   OUT=preview/edumon-ataques.mp4   where to write the video
+//   OUT=preview/vozimon-ataques.mp4   where to write the video
 
 import { createServer } from 'vite';
 import puppeteer from 'puppeteer-core';
@@ -22,7 +22,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 const ROOT = process.cwd();
-const OUT = path.resolve(ROOT, process.env.OUT ?? 'preview/edumon-ataques.mp4');
+const OUT = path.resolve(ROOT, process.env.OUT ?? 'preview/vozimon-ataques.mp4');
 const OUT_DIR = path.dirname(OUT);
 const CLIP = 2600; // must match CLIP in src/components/AttackShowcase.tsx
 const FPS = Number(process.env.FPS ?? 25);
@@ -82,7 +82,7 @@ async function recordRange(url, firefox, tmp, worker, ids) {
 async function main() {
   const firefox = findFirefox();
   if (!ffmpegOk()) throw new Error('ffmpeg not found on the PATH');
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'edumon-attacks-'));
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'vozimon-attacks-'));
   fs.mkdirSync(path.join(tmp, 'frames'));
   const server = await createServer({ root: ROOT, logLevel: 'error', server: { port: 5177, strictPort: false } });
   await server.listen();

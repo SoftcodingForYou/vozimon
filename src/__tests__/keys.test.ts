@@ -56,10 +56,10 @@ describe('key bindings', () => {
     expect(sanitizeBindings({ ...oldDefaults, b: 'c' })).toMatchObject({ a: 'z', b: 'c' });
   });
 
-  it('gives buttons added later (Menú, Edudex) a key without losing the chosen ones', () => {
+  it('gives buttons added later (Menú, Vozidex) a key without losing the chosen ones', () => {
     const old = { up: 'w', down: 's', left: 'a', right: 'd', a: 'j', b: 'k', types: 't', map: 'm' };
     expect(sanitizeBindings(old)).toEqual({ ...old, menu: 'q', dex: 'e' });
-    // the player already used E for something else: Edudex gets a free key
+    // the player already used E for something else: Vozidex gets a free key
     const taken = sanitizeBindings({ ...old, types: 'e' });
     expect(taken.types).toBe('e');
     expect(new Set(Object.values(taken)).size).toBe(BTN_ORDER.length);

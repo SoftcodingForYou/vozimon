@@ -1,4 +1,4 @@
-// Draws the world (map, wild Edumon and the player) onto a small canvas.
+// Draws the world (map, wild Vozimon and the player) onto a small canvas.
 
 import { getGrassFront, getMapPixels, getOwFrames, getPlayerFrames, getSign } from '../art/assets';
 import { hash2 } from '../game/rng';

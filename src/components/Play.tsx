@@ -125,7 +125,7 @@ export function Play({ slot, updateSlot, settings, onSettings, onExit, persist, 
 
   // Test hook: ?debug exposes the world state in the browser console.
   useEffect(() => {
-    if (new URLSearchParams(location.search).has('debug')) (window as unknown as { __edu: unknown }).__edu = { world };
+    if (new URLSearchParams(location.search).has('debug')) (window as unknown as { __vozi: unknown }).__vozi = { world };
   }, [world]);
 
   useEffect(() => {
@@ -186,8 +186,8 @@ export function Play({ slot, updateSlot, settings, onSettings, onExit, persist, 
   const welcomeText = resumed.current
     ? `¡Hola de nuevo, ${slot.name}! Seguimos justo donde lo dejaste.`
     : slot.mode === 'easy'
-      ? `¡Hola, ${slot.name}! ${walk} Busca Edumón por el mundo y en la hierba alta. Cuando encuentres uno, ¡lánzale la bola estrella!`
-      : `¡Hola, ${slot.name}! ${walk} Busca Edumón por el mundo y en la hierba alta. Lucha con tus compañeros y, si ganas, ¡atrápalo!`;
+      ? `¡Hola, ${slot.name}! ${walk} Busca Vozimón por el mundo y en la hierba alta. Cuando encuentres uno, ¡lánzale la bola estrella!`
+      : `¡Hola, ${slot.name}! ${walk} Busca Vozimón por el mundo y en la hierba alta. Lucha con tus compañeros y, si ganas, ¡atrápalo!`;
 
   return (
     <div className="play">
@@ -214,7 +214,7 @@ export function Play({ slot, updateSlot, settings, onSettings, onExit, persist, 
             <Qq /> Menú
           </span>
           <span className="hud-box hud-key" onClick={() => openIfFree({ k: 'dex' })}>
-            <Ee /> Edudex
+            <Ee /> Vozidex
           </span>
           <span className="hud-box hud-key" onClick={() => openIfFree({ k: 'types' })}>
             <Tt /> Tipos
@@ -238,7 +238,7 @@ export function Play({ slot, updateSlot, settings, onSettings, onExit, persist, 
               <>
                 <p className="dialog-title">¡Todo desbloqueado!</p>
                 <p>
-                  Ahora el juego hace como si ya tuvieras a los 150 Edumón. ¡El Edumón misterioso pasea por el mundo!
+                  Ahora el juego hace como si ya tuvieras a los 150 Vozimón. ¡El Vozimón misterioso pasea por el mundo!
                   Búscalo en el mapa.
                 </p>
               </>

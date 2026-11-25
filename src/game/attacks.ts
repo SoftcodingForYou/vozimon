@@ -85,7 +85,7 @@ const R = (motion: Motion, particle: Particle, count: number, size: number, colo
   ...extra,
 });
 
-/** Every attack's recipe, by attack name (each Edumón has its own attack). */
+/** Every attack's recipe, by attack name (each Vozimón has its own attack). */
 export const ATTACKS: Record<string, AttackRecipe> = {
   'Bola de fuego': R('arc', 'fireball', 1, 1.5, FIRE),
   Llamarada: R('stream', 'flame', 12, 1.1, FIRE),

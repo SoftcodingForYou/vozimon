@@ -3,7 +3,7 @@ import { SPECIES, TOTAL, STARTERS, LEGENDARY_IDS, MYTHICAL_ID, getSpecies } from
 import { ELEMS } from '../game/elements';
 import { drawCreature, PORTRAIT_SIZE } from '../art/creatureArt';
 
-describe('Edumon roster', () => {
+describe('Vozimon roster', () => {
   it('has 151 creatures numbered 1..151', () => {
     expect(TOTAL).toBe(151);
     SPECIES.forEach((s, i) => expect(s.id).toBe(i + 1));

@@ -1,5 +1,5 @@
 // Save slots ("partidas") and settings, stored in the browser's localStorage.
-// The Edudex (seen / caught) is saved on every change; the exact state of the
+// The Vozidex (seen / caught) is saved on every change; the exact state of the
 // world (player, wild creatures...) is stored separately every few steps.
 
 import { TOTAL } from './creatures';
@@ -16,8 +16,8 @@ export interface SaveSlot {
   avatar: number;
   seen: number[];
   caught: number[];
-  record: FightRecords; // how often each of the child's Edumón fought, and won
-  read: number[]; // known Edumón whose name the child has read out loud
+  record: FightRecords; // how often each of the child's Vozimón fought, and won
+  read: number[]; // known Vozimón whose name the child has read out loud
   allUnlocked: boolean; // secret code typed: everything that needs all 150 caught is open
   created: number;
   updated: number;
@@ -50,8 +50,8 @@ function validRecords(v: unknown): FightRecords {
 }
 
 /**
- * The child's Edumón in the order they are offered for a fight: the ones used most come first
- * (ties keep the Edudex order). The Edudex itself always stays in Edudex order.
+ * The child's Vozimón in the order they are offered for a fight: the ones used most come first
+ * (ties keep the Vozidex order). The Vozidex itself always stays in Vozidex order.
  */
 export function byUse(ids: number[], record: FightRecords): number[] {
   const fights = (id: number) => record[id]?.fights ?? 0;
@@ -80,8 +80,8 @@ export interface Settings {
 }
 
 export const MAX_NAME = 12;
-const PREFIX = 'edumon.';
-const OLD_PREFIX = 'educatiomon.'; // the game's former name
+const PREFIX = 'vozimon.';
+const OLD_PREFIXES = ['edumon.', 'educatiomon.']; // the game's former names, newest first
 const SLOTS_KEY = PREFIX + 'partidas.v1';
 const SETTINGS_KEY = PREFIX + 'ajustes.v1';
 const WORLD_KEY = PREFIX + 'mundo.v1.';
@@ -102,20 +102,22 @@ const memoryStore: KV = {
   removeItem: (k) => void memory.delete(k),
 };
 
-/** Move games saved before the rename (Educatiomon -> Edumon) to the new keys. */
+/** Move games saved before the renames (Educatiomon -> Edumon -> Vozimon) to the new keys. */
 function migrateOldSaves(s: KV) {
   try {
     if (!s.key || !s.length) return;
-    const old: string[] = [];
-    for (let i = 0; i < s.length; i++) {
-      const k = s.key(i);
-      if (k?.startsWith(OLD_PREFIX)) old.push(k);
-    }
-    for (const k of old) {
-      const nk = PREFIX + k.slice(OLD_PREFIX.length);
-      const v = s.getItem(k);
-      if (v !== null && s.getItem(nk) === null) s.setItem(nk, v);
-      s.removeItem(k);
+    for (const prefix of OLD_PREFIXES) {
+      const old: string[] = [];
+      for (let i = 0; i < s.length; i++) {
+        const k = s.key(i);
+        if (k?.startsWith(prefix)) old.push(k);
+      }
+      for (const k of old) {
+        const nk = PREFIX + k.slice(prefix.length);
+        const v = s.getItem(k);
+        if (v !== null && s.getItem(nk) === null) s.setItem(nk, v);
+        s.removeItem(k);
+      }
     }
   } catch (err) {
     console.warn('No se pudieron mover las partidas antiguas', err);
@@ -128,7 +130,7 @@ function kv(): KV {
   try {
     const ls = (globalThis as { localStorage?: KV }).localStorage;
     if (ls) {
-      const probe = '__edumon__';
+      const probe = '__vozimon__';
       ls.setItem(probe, probe);
       ls.removeItem(probe);
       store = ls;
@@ -264,10 +266,14 @@ export function deleteSlot(id: string) {
 
 // ------------------------------------------------------------ files (move a game elsewhere)
 
-/** Marks a file as an exported Edumón game. */
-export const EXPORT_FORMAT = 'edumon-partida';
+/** Marks a file as an exported Vozimón game. */
+export const EXPORT_FORMAT = 'vozimon-partida';
+/** Files exported before the game was renamed (Edumon -> Vozimon) still load. */
+const OLD_EXPORT_FORMATS = ['edumon-partida'];
 /** File extension of exported games (the content is JSON). */
-export const EXPORT_EXT = 'edumon';
+export const EXPORT_EXT = 'vozimon';
+/** Extensions of exported games from before the rename, still accepted when loading a file. */
+export const OLD_EXPORT_EXTS = ['edumon'];
 
 /** Everything an exported game carries, except its name (the player picks a new one on import). */
 export interface ImportedGame {
@@ -282,7 +288,7 @@ export interface ImportedGame {
   world: unknown; // the exact world state (checked again when the game is loaded)
 }
 
-/** A game as a file's text: the Edudex, fight records, settings of the game and the world state. */
+/** A game as a file's text: the Vozidex, fight records, settings of the game and the world state. */
 export function exportGame(slot: SaveSlot): string {
   return JSON.stringify({
     format: EXPORT_FORMAT,
@@ -303,18 +309,18 @@ export function exportGame(slot: SaveSlot): string {
   });
 }
 
-/** A suggested file name for an exported game, e.g. "edumon-ana-2026-11-19.edumon". */
+/** A suggested file name for an exported game, e.g. "vozimon-ana-2026-11-19.vozimon". */
 export function exportFileName(slot: SaveSlot, d = new Date()): string {
   const ascii = slot.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   const day = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  return `edumon-${ascii || 'partida'}-${day}.${EXPORT_EXT}`;
+  return `vozimon-${ascii || 'partida'}-${day}.${EXPORT_EXT}`;
 }
 
 /** Read an exported game (null if the text isn't one). Everything is checked like a stored slot. */
 export function parseExport(text: string): ImportedGame | null {
   try {
     const d = JSON.parse(text) as Record<string, unknown>;
-    if (!d || d.format !== EXPORT_FORMAT || !d.game || typeof d.game !== 'object') return null;
+    if (!d || (d.format !== EXPORT_FORMAT && !OLD_EXPORT_FORMATS.includes(d.format as string)) || !d.game || typeof d.game !== 'object') return null;
     const s = sanitize({ ...(d.game as object), id: 'import', name: 'import' });
     if (!s) return null;
     return { mode: s.mode, map: s.map, avatar: s.avatar, seen: s.seen, caught: s.caught, record: s.record, read: s.read, allUnlocked: s.allUnlocked, world: d.world ?? null };

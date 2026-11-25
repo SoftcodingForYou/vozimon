@@ -1,10 +1,11 @@
 // Saving a text file to a folder the player chooses, and picking one to open (browser only).
 // Both must be started from a key press, tap or click (browsers only allow file dialogs then).
 
-/** A kind of file of our own, e.g. { description: 'Partida de Edumón', ext: 'edumon' }. */
+/** A kind of file of our own, e.g. { description: 'Partida de Vozimón', ext: 'vozimon' }. */
 export interface FileKind {
   description: string;
   ext: string;
+  alsoOpens?: string[]; // older extensions that can still be opened (e.g. from before a rename)
 }
 
 interface SaveHandle {
@@ -34,7 +35,7 @@ export async function saveTextFile(fileName: string, text: string, kind: FileKin
       // anything else: fall back to a plain download
     }
   }
-  // a neutral type, so no browser adds its own extension (".edumon.json")
+  // a neutral type, so no browser adds its own extension (".vozimon.json")
   const url = URL.createObjectURL(new Blob([text], { type: 'application/octet-stream' }));
   const a = document.createElement('a');
   a.href = url;
@@ -52,7 +53,7 @@ export function pickTextFile(kind: FileKind): Promise<string | null> {
     const input = document.createElement('input');
     input.type = 'file';
     // iOS greys out every file whose extension it doesn't know, so there it shows all files
-    if (!isIOS()) input.accept = `.${kind.ext}`;
+    if (!isIOS()) input.accept = [kind.ext, ...(kind.alsoOpens ?? [])].map((x) => `.${x}`).join(',');
     input.style.display = 'none';
     document.body.appendChild(input);
     const done = (v: string | null) => {

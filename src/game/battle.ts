@@ -31,7 +31,7 @@ export function attackDamage(attacker: Species, defender: Species, attackerIsPla
   return { damage, mult, crit };
 }
 
-/** Easy mode: the higher the Edudex number, the harder to catch (92% -> 18%). */
+/** Easy mode: the higher the Vozidex number, the harder to catch (92% -> 18%). */
 export function easyCatchChance(id: number): number {
   return 0.92 - 0.74 * ((id - 1) / (TOTAL - 1));
 }

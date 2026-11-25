@@ -1,6 +1,6 @@
 /**
- * Exports every Edumon portrait as a PNG file into src/art/
- * (named like "001-chispin.png": Edudex number + name without accents).
+ * Exports every Vozimon portrait as a PNG file into src/art/
+ * (named like "001-chispin.png": Vozidex number + name without accents).
  *
  *   npm run export-art          -> 224x224 px (4x, crisp pixels)
  *   npm run export-art -- 1     -> 56x56 px (original pixel size)

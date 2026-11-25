@@ -1,4 +1,4 @@
-// The 151 original Edumon. Families are listed in Edudex order;
+// The 151 original Vozimon. Families are listed in Vozidex order;
 // numbers (1..151) are assigned automatically in that order.
 
 import type { Elem } from './elements';
@@ -848,7 +848,7 @@ const FAMILIES: FamDef[] = [
     ],
   },
 
-  // 121-144 · Edumon sin evolución
+  // 121-144 · Vozimon sin evolución
   { t: ['bicho'], h: ['pradera'], art: { k: 'bug', v: 'beetle', c: ['#e83a3a', '#f8f8f8', '#24202a'], f: ['spots', 'blush'] }, m: [{ n: 'Lunarín', a: 'Vuelo rápido', d: 'Trae buena suerte. ¿Cuántos lunares tiene? ¡Cuéntalos!' }] },
   { t: ['normal'], h: ['pradera'], art: { k: 'quad', v: 'cow', c: ['#f8f8f2', '#f8c8c2', '#3a323a', '#e8e0c8'], f: ['spots', 'h-horns', 'e-floppy'] }, m: [{ n: 'Vaquita', a: 'Mugido', d: 'Da una leche riquísima con sabor a fresa.' }] },
   { t: ['normal'], h: ['pradera'], art: { k: 'quad', v: 'pig', c: ['#f8b2c2', '#ffe2ea', '#e87a92'], f: ['e-pointy', 't-curly', 'blush', 'ei-p'] }, m: [{ n: 'Cerdín', a: 'Revolcón', d: '¡Le encanta jugar en el barro!' }] },

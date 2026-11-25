@@ -150,7 +150,7 @@ const OW_ART: Record<OwKind, string[][]> = {
 
 /**
  * One fixed look per kind: in the world all creatures of a kind look exactly the same, so
- * children can't tell which Edumón it is until they meet it.
+ * children can't tell which Vozimón it is until they meet it.
  */
 export const OW_COLORS: Record<OwKind, [string, string]> = {
   land: ['#c89a62', '#f4e2c0'],

@@ -76,7 +76,7 @@ function pieces(transcript: string): string[] {
 
 /**
  * Did the child read this creature's name? `heard` are the recogniser's guesses. A guess counts
- * when it sounds enough like the name and not more like any other Edumón's name (so "Lanita"
+ * when it sounds enough like the name and not more like any other Vozimón's name (so "Lanita"
  * doesn't count for Ranita, but "ranitas" or "Anita" do). Recognisers like to finish invented
  * names as real words ("Trinín" → "Trinidad"), so a longer word is also compared by its start.
  */

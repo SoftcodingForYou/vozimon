@@ -324,7 +324,7 @@ describe('the mythical (#151)', () => {
     }
   });
 
-  it('also roams when the secret code unlocked everything (the Edudex stays as it is)', () => {
+  it('also roams when the secret code unlocked everything (the Vozidex stays as it is)', () => {
     const ws = createWorld(map, [1, 4], 21);
     tick(ws, 20);
     expect(roamer(ws)).toHaveLength(0);

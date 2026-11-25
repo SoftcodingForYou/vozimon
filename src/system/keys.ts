@@ -14,7 +14,7 @@ export const BTN_NAMES: Record<Btn, string> = {
   a: 'A: aceptar',
   b: 'B: volver y correr',
   menu: 'Menú',
-  dex: 'Edudex',
+  dex: 'Vozidex',
   types: 'Tabla de tipos',
   map: 'Mapa',
 };

@@ -1,4 +1,4 @@
-// The living world: the player walks around, wild Edumon wander and
+// The living world: the player walks around, wild Vozimon wander and
 // appear around the player. Pure logic (no drawing), so it can be tested.
 
 import { SPECIES, MYTHICAL_ID, TOTAL, getSpecies, type Species } from '../game/creatures';
@@ -54,7 +54,7 @@ export interface WorldState {
   caught: Set<number>;
   bumpCooldown: number;
   steps: number; // steps walked (the game saves every AUTOSAVE_STEPS steps)
-  unlockAll: boolean; // secret code: behave as if all 150 were caught (the Edudex stays as it is)
+  unlockAll: boolean; // secret code: behave as if all 150 were caught (the Vozidex stays as it is)
   signWait: number; // seconds before the same sign can be read again (key held against it)
 }
 

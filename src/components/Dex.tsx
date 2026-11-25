@@ -12,7 +12,7 @@ import { ReadAloud, TRIES_BEFORE_SKIP } from './ReadAloud';
 
 const COLS = 6;
 
-/** Wins and fights of one of the child's Edumón (same numbers as in the fighter list). */
+/** Wins and fights of one of the child's Vozimón (same numbers as in the fighter list). */
 function FightLine({ r }: { r: FightRecord }) {
   return (
     <p className="dex-record">
@@ -48,12 +48,12 @@ interface Props {
   slot: SaveSlot;
   onClose: () => void;
   only?: number;
-  reading?: boolean; // "Leer en voz alta" is on: caught Edumón's names can be read out loud
+  reading?: boolean; // "Leer en voz alta" is on: caught Vozimón's names can be read out loud
   onRead?: (id: number) => void;
 }
 
 /**
- * The Edudex, always in Edudex-number order. With `only`, it shows just that creature's page
+ * The Vozidex, always in Vozidex-number order. With `only`, it shows just that creature's page
  * (when a creature is caught for the first time); Action or Cancel closes it.
  * With reading on, every known creature's page has a "Leer" button: selected (Action reads) until
  * the name was read once; after that it's selected with up/down or tapped. The new page after a
@@ -84,11 +84,11 @@ export function Dex({ slot, onClose, only, reading = false, onRead }: Props) {
     setBtnPick(null);
   };
 
-  // every Edumón already met can be read; on the new page after a catch just once
+  // every Vozimón already met can be read; on the new page after a catch just once
   const canRead = (id: number) => reading && seen.has(id) && !(only && passed);
   const cur = idx + 1;
   const mustRead = !!only && canRead(cur); // the new page: read before going on
-  // in the Edudex the Leer button is selected until the name was read once (then only when chosen again)
+  // in the Vozidex the Leer button is selected until the name was read once (then only when chosen again)
   const btnSel = only ? mustRead : detail && canRead(cur) && (btnPick ?? !read.has(cur));
   const startReading = (id: number) => {
     sfx('ok');
@@ -118,7 +118,7 @@ export function Dex({ slot, onClose, only, reading = false, onRead }: Props) {
       return;
     }
     if (e.btn === 'dex') {
-      // the Edudex key closes it again, like M closes the map
+      // the Vozidex key closes it again, like M closes the map
       sfx('back');
       onClose();
       return;
@@ -169,7 +169,7 @@ export function Dex({ slot, onClose, only, reading = false, onRead }: Props) {
   return (
     <div className={'dex' + (only ? ' dex-new' : '') + (reading ? ' reading' : '')}>
       <div className="dex-header">
-        <h2>EDUDEX</h2>
+        <h2>VOZIDEX</h2>
         {only && <span className="dex-new-badge">¡Nuevo!</span>}
         <span className="dex-count">
           <BallIcon size={26} /> {caught.size}/{TOTAL} atrapados

@@ -1,4 +1,4 @@
-# Edumón
+# Vozimón
 
 An educational creature-collecting game in Spanish for children aged 4–6, in the spirit of the
 classic Game Boy monster-collecting games. All creatures, names, art, sounds and music are
@@ -8,13 +8,13 @@ classic Game Boy monster-collecting games. All creatures, names, art, sounds and
 ## Product requirements (from the client)
 
 - Two modes, chosen when starting a new game:
-  - **Normal**: free roaming in an open world with an empty Edudex plus one starter companion
-    (choice of three). Wild Edumón are chased and met in the world. To fight, the child picks
+  - **Normal**: free roaming in an open world with an empty Vozidex plus one starter companion
+    (choice of three). Wild Vozimón are chased and met in the world. To fight, the child picks
     one of their caught creatures from a list (name + picture). Fights are turn-based, each
     creature has one representative attack. After winning, the star ball ("bola estrella",
     unlimited) catches it.
   - **Fácil** (for 4-year-olds): no fights, just throw the star ball (unlimited). The catch chance
-    goes down with the Edudex number (92% → 18%); after breaking free it may run away (5% → 35%).
+    goes down with the Vozidex number (92% → 18%); after breaking free it may run away (5% → 35%).
 - 151 creatures: #145–150 are legendaries living at fixed spots (the world map stars the ones
   still waiting; caught ones simply disappear from it). After a battle that isn't a catch, a
   legendary goes away for a short while (`spotCooldown`, 25 s); meanwhile a wooden sign stands at
@@ -26,29 +26,30 @@ classic Game Boy monster-collecting games. All creatures, names, art, sounds and
   as usual either way. In the world it shows the same golden sparkles as the legendaries.
 - Secret code (never shown to players): typing `eduboss` while the in-game menu (Q) is open (and
   only then) unlocks everything for that save (`SaveSlot.allUnlocked`, `WorldState.unlockAll`): the
-  game behaves as if all 150 were caught (e.g. #151 roams), without adding anything to the Edudex.
+  game behaves as if all 150 were caught (e.g. #151 roams), without adding anything to the Vozidex.
   Typing it again switches it off, leaving only what was really earned.
-- Edudex: names and portraits stay hidden ("???") until met. Star-ball icon = caught,
-  eye icon = only seen. Always in Edudex-number order. Catching a creature for the first time
-  shows its new Edudex page right after "¡X se ha guardado en tu Edudex!" (Action or Cancel goes
+- Vozidex: names and portraits stay hidden ("???") until met. Star-ball icon = caught,
+  eye icon = only seen. Always in Vozidex-number order. Catching a creature for the first time
+  shows its new Vozidex page right after "¡X se ha guardado en tu Vozidex!" (Action or Cancel goes
   back to the world; with reading aloud on, only after the name was read). A caught creature's
   page shows its wins / fights.
-- Fight records (`SaveSlot.record`): a fight counts when the child sends an Edumón out (once per
+- Fight records (`SaveSlot.record`): a fight counts when the child sends an Vozimón out (once per
   battle); the win goes to the one that knocks out the wild creature. The fighter list is sorted
-  by fights (most used first; never-used ones follow in Edudex order), fixed for the whole battle,
+  by fights (most used first; never-used ones follow in Vozidex order), fixed for the whole battle,
   and each card shows wins / fights in its corner. After a K.O. the message itself throws the
   star ball (Action or Cancel), since catching is certain then: no menu.
 - Save slots ("partidas"): each new game gets a name, which must be unique (case-insensitive).
   Everything is stored in the browser's `localStorage` and the chosen slot is always overwritten.
-  The Edudex (seen/caught) is saved on every change. The exact game state (player position and
+  The Vozidex (seen/caught) is saved on every change. The exact game state (player position and
   direction, wild creatures, legendary cooldowns, random generator, step counter) is saved every
   5th step, after every battle and when the game is left, hidden or closed. Loading a slot resumes
   exactly there; a brand-new game starts on a random road.
-  A game can be exported to a `.edumon` file (JSON: Edudex, records, unlock flag and the world
+  A game can be exported to a `.vozimon` file (JSON: Vozidex, records, unlock flag and the world
   snapshot; `exportGame`) via "Guardar en un archivo" in its dialog, and imported via "Cargar de un
   archivo" in the game list (`parseExport` → `importGame`): the player always types a new unique name
   (never the file name or the stored one) and it becomes an ordinary new slot; the file isn't needed
-  afterwards. File dialogs live in `system/files.ts`.
+  afterwards. Files from before the rename (`.edumon`, format `edumon-partida`) still load. File
+  dialogs live in `system/files.ts`.
 - Two worlds; the map is chosen once when creating a game and stored on the slot (`SaveSlot.map`):
   - **Estaciones** (the original world): roads, grass, tall grass (random encounters), mountains
     with stairs and a snowy peak, beaches (water creatures; no swimming), two volcanoes, lake with
@@ -63,15 +64,15 @@ classic Game Boy monster-collecting games. All creatures, names, art, sounds and
     the world map tints the districts, and walking into one shows its name and type.
 - In the world, creatures use generic sprites (land, bird, water, bug, ghost, plant) so their
   looks stay secret: every creature of a kind looks exactly the same (fixed colours per kind,
-  `OW_COLORS`); battles and the Edudex show full-body portraits.
+  `OW_COLORS`); battles and the Vozidex show full-body portraits.
 - Controls are minimal: arrows, A (default Space, shown as "Espacio"), B (default X; hold B to run), Q = menu (its own
-  key, never the action button), E = Edudex, T = type chart ("Tipos", who is very effective
+  key, never the action button), E = Vozidex, T = type chart ("Tipos", who is very effective
   against whom) and M = world map. Every button answers to exactly one key (no extra fallback
   keys); the only exception is typing a name, where Intro confirms, Esc goes back and Retroceso
   erases (letter keys write letters there). All keys can be changed in Ajustes → Teclas. On-screen hints always show
   the key the player chose (or round buttons when playing by touch: ✓ for A, ✗ for B, ☰/E/T/M; a gamepad shows A/B); the HUD
-  shows Menú, Edudex, Tipos and Mapa stacked top-right and they can be tapped. The in-game menu only
-  manages the game and its settings (Ajustes, Salir, Seguir); the Edudex has its own shortcut. Touch D-pad + ✓ (A, green) / ✗ (B, red)
+  shows Menú, Vozidex, Tipos and Mapa stacked top-right and they can be tapped. The in-game menu only
+  manages the game and its settings (Ajustes, Salir, Seguir); the Vozidex has its own shortcut. Touch D-pad + ✓ (A, green) / ✗ (B, red)
   buttons on tablets/phones — no letters, they confuse young children; gamepads also work.
 - Reading: Ajustes → Letra switches between the clear "Fina" font (Andika, made for beginning
   readers; the default) and the retro "Píxel" font, and Ajustes → Mayúsculas shows every text in
@@ -79,22 +80,22 @@ classic Game Boy monster-collecting games. All creatures, names, art, sounds and
   are never cut off: they shrink to fit (`FitText` in `ui.tsx`).
 - Reading names out loud (Ajustes → "Leer en voz alta", `Settings.reading`, **on by default**;
   switching it back on shows a confirmation for grown-ups): every known (seen or caught) creature's
-  Edudex page (also the new one after a first catch) has a "🎤 Leer" button. Until the name was read once it is
+  Vozidex page (also the new one after a first catch) has a "🎤 Leer" button. Until the name was read once it is
   selected (Action reads); afterwards Action does the usual and the button is chosen with up/down
   or tapped. On the new page after a catch the reading is a one-time pass (asked every time, even
   for a name already read while only seen): the page can't be left before it (until the ✕ shows),
-  and afterwards the button is gone; reading again happens later in the Edudex. The browser's speech recognition
+  and afterwards the button is gone; reading again happens later in the Vozidex. The browser's speech recognition
   (`system/listen.ts`; Chrome/Edge on-device when its Spanish pack is there, else Google's/Microsoft's
   service; Safari: Apple's; Firefox: none) listens in `es-CL` while music and sounds are muted. It
   keeps listening across pauses (children read syllable by syllable; pieces are joined) and stops
   2.2 s after the child stops talking (9 s at most). `heardName` (`game/reading.ts`) compares by
   sound and forgivingly (v/b, z/s, ll/y, accents, half cost for e/i, o/u, r/l, n/m, d/t, b/p, k/g,
   words run together, real-word completions like "Trinidad" for Trinín) but never accepts a guess
-  closer to another Edumón's name. What was heard is logged to the console (`[Edumón] Leer`) and,
+  closer to another Vozimón's name. What was heard is logged to the console (`[Vozimón] Leer`) and,
   with `?debug`, shown on the syllables screen. Read → stars and
   "¡Muy bien!", saved in `SaveSlot.read` (a star on the page, in the grid and a count in the header).
   Not understood → only the name in coloured syllables (`syllables`) and "Otra vez". A ✕ in the
-  overlay's top-right corner (or B) gives up without a star: when practising in the Edudex it is
+  overlay's top-right corner (or B) gives up without a star: when practising in the Vozidex it is
   always there; on the new page after a catch only after 5 misses (`TRIES_BEFORE_SKIP`). Only when
   nothing can listen (no recognition, no microphone permission, microphone broken) a grown-up
   confirms with "✓ Lo leyó bien" (with a short note why). Child-facing texts here stay a word or
@@ -114,11 +115,11 @@ classic Game Boy monster-collecting games. All creatures, names, art, sounds and
 - `npm run export-art` regenerates the portrait PNGs in `src/art/` (`001-chispin.png` …, 224×224;
   `npm run export-art -- 1` for the original 56×56). Run it after changing creature art or names.
 - `npm run record-attacks` records the presentation video of all 151 attacks (normal speed, with
-  sound) into `preview/edumon-ataques.mp4` (git-ignored). Needs Firefox 129+ and ffmpeg; options
+  sound) into `preview/vozimon-ataques.mp4` (git-ignored). Needs Firefox 129+ and ffmpeg; options
   `FROM`/`TO`, `WORKERS`, `FPS`, `OUT`, `FIREFOX` (see `scripts/record-attacks.mjs`).
 - Test URLs (throwaway save, nothing stored): `?demo=world|battle|dex|types|map|slots|new|attacks` with
   optional `&sp=25&mode=easy&biome=4&caught=12&team=1,4,7&font=pixel&upper=1&reading=0&map=santiago`
-  (`biome=7` is the city battle background). `?debug` exposes the world state as `window.__edu.world`.
+  (`biome=7` is the city battle background). `?debug` exposes the world state as `window.__vozi.world`.
 
 ## Architecture (src/)
 
@@ -146,8 +147,11 @@ classic Game Boy monster-collecting games. All creatures, names, art, sounds and
 
 ## Conventions
 
-- The game is called **Edumón** (accent on the o; plural stays "los Edumón") in all player-facing
-  text and docs. Code identifiers, the npm package name and the `edumon.` storage keys stay ASCII.
+- The game is called **Vozimón** (accent on the o; plural stays "los Vozimón") in all player-facing
+  text and docs (its book is the **Vozidex**). Code identifiers, the npm package name, the repo
+  (`vozimon`) and the `vozimon.` storage keys stay ASCII. The game was called Edumón before (and
+  Educatiomon before that): saves under `edumon.`/`educatiomon.` keys move to `vozimon.` on start
+  (`migrateOldSaves`); don't drop that. The secret code `eduboss` kept its old name.
 - All player-facing text is Spanish, short and encouraging. There is no voice-over (the client
   removed text-to-speech because it didn't sound human); don't add it back.
 - Every screen/overlay listens with `useInput(handler, LAYER.x)`; the highest layer wins.
@@ -164,7 +168,7 @@ classic Game Boy monster-collecting games. All creatures, names, art, sounds and
   (`refreshWorldArt`), and temporary canvases are freed with `releaseCanvas`.
 - Font sizes in `styles.css` are written as `calc(Npx * var(--fs, 1))`: `--fs` shrinks the wider
   fine font so both letter styles fit the same boxes. Check new screens in both styles and in capitals.
-- Edudex numbers come from the order of `FAMILIES`, and saves store those numbers: inserting or
+- Vozidex numbers come from the order of `FAMILIES`, and saves store those numbers: inserting or
   reordering creatures changes what existing saves point to. Keep the order stable.
 - Saved world states only load into the exact same generated map (`WorldMap.id`). A test pins a
   checksum of Estaciones: changing its generator moves every saved player. Santiago's district

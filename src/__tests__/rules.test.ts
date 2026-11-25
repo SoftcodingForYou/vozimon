@@ -56,7 +56,7 @@ describe('battles', () => {
 });
 
 describe('easy mode catching', () => {
-  it('gets harder with the Edudex number', () => {
+  it('gets harder with the Vozidex number', () => {
     for (let id = 2; id <= 151; id++) {
       expect(easyCatchChance(id)).toBeLessThan(easyCatchChance(id - 1));
       expect(easyFleeChance(id)).toBeGreaterThan(easyFleeChance(id - 1));

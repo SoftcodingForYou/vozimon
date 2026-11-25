@@ -27,10 +27,10 @@ interface Props {
   slot: SaveSlot;
   onSeen: (id: number) => void;
   onCaught: (id: number) => void;
-  onFight: (id: number) => void; // one of the child's Edumón was sent out to fight
+  onFight: (id: number) => void; // one of the child's Vozimón was sent out to fight
   onWin: (id: number) => void; // ...and knocked out the wild one
   onEnd: (o: Outcome) => void;
-  reading?: boolean; // names can be read out loud on the new Edudex page
+  reading?: boolean; // names can be read out loud on the new Vozidex page
   onRead?: (id: number) => void;
 }
 
@@ -118,7 +118,7 @@ export function Battle({ enc, slot, onSeen, onCaught, onFight, onWin, onEnd, rea
         }),
       );
 
-    /** The Edudex page of a newly caught creature (Action or Cancel continues). */
+    /** The Vozidex page of a newly caught creature (Action or Cancel continues). */
     const dexPage = () =>
       new Promise<void>((r) =>
         setUi({
@@ -168,21 +168,21 @@ export function Battle({ enc, slot, onSeen, onCaught, onFight, onWin, onEnd, rea
       await text(`¡Bien! ¡Has atrapado a ${wild.name}!`);
       if (!init.wasCaught) {
         sfx('newdex');
-        await text(`¡${wild.name} se ha guardado en tu Edudex!`);
-        await dexPage(); // its new Edudex page, before going back to the world
+        await text(`¡${wild.name} se ha guardado en tu Vozidex!`);
+        await dexPage(); // its new Vozidex page, before going back to the world
         if (wild.id !== MYTHICAL_ID && !slot.allUnlocked && !mythicalUnlocked(slot.caught) && mythicalUnlocked([...slot.caught, wild.id])) {
           sfx('newdex');
-          await text('¡Has atrapado a los 150! Ahora un Edumón misterioso pasea por todo el mundo. ¡Búscalo en el mapa!');
+          await text('¡Has atrapado a los 150! Ahora un Vozimón misterioso pasea por todo el mundo. ¡Búscalo en el mapa!');
         }
-        if (init.caughtBefore + 1 >= TOTAL) await text('¡Increíble! ¡Has completado el Edudex entero! ¡Eres una gran exploradora o un gran explorador!');
+        if (init.caughtBefore + 1 >= TOTAL) await text('¡Increíble! ¡Has completado el Vozidex entero! ¡Eres una gran exploradora o un gran explorador!');
       } else {
-        await text(`Ya tenías a ${wild.name} en tu Edudex. ¡Ahora tiene un amigo más!`);
+        await text(`Ya tenías a ${wild.name} en tu Vozidex. ¡Ahora tiene un amigo más!`);
       }
       cbs.current.onEnd('caught');
     };
 
     const easyLoop = async () => {
-      if (slot.mode === 'normal') await text('Todavía no tienes Edumón para luchar. ¡Lanza la bola estrella!');
+      if (slot.mode === 'normal') await text('Todavía no tienes Vozimón para luchar. ¡Lanza la bola estrella!');
       for (;;) {
         const c = await choose('¿Qué hacemos?', [{ label: 'Lanzar bola', icon: <BallIcon size={30} /> }, { label: 'Huir' }]);
         if (c === 1) return runAway();
@@ -276,7 +276,7 @@ export function Battle({ enc, slot, onSeen, onCaught, onFight, onWin, onEnd, rea
         fainted.add(current!);
         setMine(null);
         if (fainted.size >= team.length) {
-          await text(`Tus Edumón necesitan descansar. ${wild.name} se fue corriendo.`);
+          await text(`Tus Vozimón necesitan descansar. ${wild.name} se fue corriendo.`);
           animWild('flee');
           await wait(500);
           cbs.current.onEnd('lost');
@@ -337,7 +337,7 @@ export function Battle({ enc, slot, onSeen, onCaught, onFight, onWin, onEnd, rea
         sfx('newdex');
       }
       await text(init.wasSeen ? `¡Mira! ¡Un ${wild.name} salvaje!` : `¡Mira! ¡Un ${wild.name} salvaje! ¡Es la primera vez que lo ves!`);
-      if (wild.mythical && !easy) await text('¡Cuidado! Es cinco veces más fuerte que los demás Edumón. ¡Tus compañeros tendrán que turnarse!');
+      if (wild.mythical && !easy) await text('¡Cuidado! Es cinco veces más fuerte que los demás Vozimón. ¡Tus compañeros tendrán que turnarse!');
       if (easy) await easyLoop();
       else await normalLoop();
     };

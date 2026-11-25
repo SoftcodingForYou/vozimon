@@ -30,7 +30,7 @@ describe('reading names out loud', () => {
     expect(heardName(['Trinero'], id('Trinín'))).toBe(false); // that's its evolution
   });
 
-  it('does not count other words or another Edumón', () => {
+  it('does not count other words or another Vozimón', () => {
     expect(heardName(['gato'], id('Chispín'))).toBe(false);
     expect(heardName([''], id('Chispín'))).toBe(false);
     expect(heardName([], id('Chispín'))).toBe(false);

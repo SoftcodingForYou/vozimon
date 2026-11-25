@@ -19,7 +19,7 @@ const NO_MIC_NOTE = {
 };
 
 /**
- * The child reads a caught Edumón's name out loud. Few words on purpose (the children are just
+ * The child reads a caught Vozimón's name out loud. Few words on purpose (the children are just
  * learning to read): the name to read, a microphone while listening, stars when it worked, and the
  * name in coloured syllables with "Otra vez" when it didn't (yet). There is no backing out. Only
  * where nothing can listen (no speech recognition, no microphone) a grown-up confirms with ✓.
@@ -29,7 +29,7 @@ interface Props {
   onRead: () => void; // read (or confirmed by a grown-up): a star
   onSkip: () => void; // ✕: no star, but the child may go on
   onClose: () => void;
-  closeAfter?: number; // misses before the ✕ shows (0: from the start, when practising in the Edudex)
+  closeAfter?: number; // misses before the ✕ shows (0: from the start, when practising in the Vozidex)
 }
 
 export function ReadAloud({ id, onRead, onSkip, onClose, closeAfter = 0 }: Props) {

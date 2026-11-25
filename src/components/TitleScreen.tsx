@@ -28,7 +28,7 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
         <div className="hill h2" />
       </div>
       <h1 className="logo">
-        {'EDUMÓN'.split('').map((ch, i) => (
+        {'VOZIMÓN'.split('').map((ch, i) => (
           <span key={i} style={{ animationDelay: `${i * 0.08}s` }}>
             {ch}
           </span>
@@ -50,7 +50,7 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
           <DirKeys pair="lr" /> caminar · <A /> aceptar · <Bb /> volver
         </span>
         <span>
-          <Qq /> menú · <Ee /> edudex · <Tt /> tipos · <Mm /> mapa
+          <Qq /> menú · <Ee /> vozidex · <Tt /> tipos · <Mm /> mapa
         </span>
       </p>
     </div>

@@ -1,4 +1,4 @@
-// Listening to a child reading an Edumón's name (browser speech recognition, Web Speech API).
+// Listening to a child reading an Vozimón's name (browser speech recognition, Web Speech API).
 // Chrome / Edge: on the device when its Spanish pack is installed, otherwise Google's / Microsoft's
 // servers. Safari: Apple's service. Firefox has none: then only a grown-up can confirm.
 // Only used when a grown-up switched "Leer en voz alta" on in Ajustes.
@@ -141,7 +141,7 @@ export function listenFor(id: number, onHearing?: () => void): { result: Promise
     clearTimeout(timer);
     clearTimeout(pause);
     lastHeard = heard();
-    console.info(`[Edumón] Leer «${name}»: ${r} · oído: ${lastHeard.map((t) => `«${t}»`).join(', ') || '(nada)'}`);
+    console.info(`[Vozimón] Leer «${name}»: ${r} · oído: ${lastHeard.map((t) => `«${t}»`).join(', ') || '(nada)'}`);
     const old = rec;
     rec = null;
     try {
@@ -187,7 +187,7 @@ export function listenFor(id: number, onHearing?: () => void): { result: Promise
       if (rec !== r) return;
       const err = e.error;
       if (err === 'aborted') return;
-      console.info(`[Edumón] Leer: error del reconocimiento de voz (${lang}${local ? ', en el aparato' : ''}): ${err}`);
+      console.info(`[Vozimón] Leer: error del reconocimiento de voz (${lang}${local ? ', en el aparato' : ''}): ${err}`);
       if (err === 'no-speech') return finish('silence');
       if (err === 'not-allowed' || err === 'service-not-allowed') return finish('denied');
       if (err === 'phrases-not-supported' && phrases) return restart(() => attempt(lang, local, false));

@@ -887,7 +887,7 @@ body {
   color: #fff;
 }
 
-/* the Edudex page shown when a creature is met for the first time (over the battle) */
+/* the Vozidex page shown when a creature is met for the first time (over the battle) */
 .dex.dex-new {
   z-index: 60;
   animation: popIn 0.35s ease-out;

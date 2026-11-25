@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { EXPORT_EXT, exportFileName, exportGame, parseExport, type ImportedGame, type SaveSlot } from '../game/save';
+import { EXPORT_EXT, OLD_EXPORT_EXTS, exportFileName, exportGame, parseExport, type ImportedGame, type SaveSlot } from '../game/save';
 import { pickTextFile, saveTextFile, type FileKind } from '../system/files';
 import { TOTAL } from '../game/creatures';
 import { avatarURL } from '../art/assets';
@@ -8,7 +8,7 @@ import { sfx } from '../system/audio';
 import { Menu, LAYER, BallIcon, EyeIcon, KeyHint, A, Bb } from './ui';
 import { ConfirmDialog } from './ConfirmDialog';
 
-const GAME_FILE: FileKind = { description: 'Partida de Edumón', ext: EXPORT_EXT };
+const GAME_FILE: FileKind = { description: 'Partida de Vozimón', ext: EXPORT_EXT, alsoOpens: OLD_EXPORT_EXTS };
 
 interface Props {
   slots: SaveSlot[];
@@ -34,7 +34,7 @@ export function SlotMenu({ slots, onPlay, onNew, onImport, onDelete, onSettings,
       if (game) onImport(game);
       else {
         sfx('error');
-        setMessage('Ese archivo no es una partida de Edumón.');
+        setMessage('Ese archivo no es una partida de Vozimón.');
       }
     });
   };

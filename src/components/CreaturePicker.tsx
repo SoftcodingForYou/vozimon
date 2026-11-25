@@ -16,7 +16,7 @@ interface Props {
 }
 
 /**
- * Grid of all caught Edumón (name + picture) to choose a fighter, most used first (the order is
+ * Grid of all caught Vozimón (name + picture) to choose a fighter, most used first (the order is
  * decided by the battle). The corner shows its wins / fights.
  */
 export function CreaturePicker({ team, wild, exclude, current, title, allowCancel, record, onDone }: Props) {

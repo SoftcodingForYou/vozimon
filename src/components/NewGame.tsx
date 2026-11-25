@@ -226,7 +226,7 @@ export function NameEntry({ initial, slots, onCancel, onDone }: { initial: strin
 
 function ModeSelect({ initial, onBack, onDone }: { initial: Mode; onBack: () => void; onDone: (m: Mode) => void }) {
   const modes: { m: Mode; title: string; text: string }[] = [
-    { m: 'normal', title: 'Normal', text: 'Lucha con tus Edumón. Si ganas, ¡lo atrapas!' },
+    { m: 'normal', title: 'Normal', text: 'Lucha con tus Vozimón. Si ganas, ¡lo atrapas!' },
     { m: 'easy', title: 'Fácil', text: 'Sin peleas: lanza la bola estrella y... ¡a ver si lo atrapas!' },
   ];
   return (

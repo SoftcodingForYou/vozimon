@@ -119,7 +119,7 @@ export function WorldMapView({ world, caught, avatar, onClose }: { world: WorldS
         ))}
         {mythical && (
           <span className="wm-mythical" style={{ left: px(mythical.x), top: py(mythical.y) }}>
-            <img className="pix" src={genericURL(MYTHICAL_ID)} alt="Edumón misterioso" />
+            <img className="pix" src={genericURL(MYTHICAL_ID)} alt="Vozimón misterioso" />
             <b>?</b>
           </span>
         )}
@@ -136,7 +136,7 @@ export function WorldMapView({ world, caught, avatar, onClose }: { world: WorldS
         )}
         {mythical && (
           <span>
-            <img className="pix" src={genericURL(MYTHICAL_ID)} alt="" width={22} height={22} /> Edumón misterioso
+            <img className="pix" src={genericURL(MYTHICAL_ID)} alt="" width={22} height={22} /> Vozimón misterioso
           </span>
         )}
         {districts && <span>Cada comuna tiene su tipo</span>}

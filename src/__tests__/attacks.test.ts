@@ -4,7 +4,7 @@ import { ATTACKS, attackDuration, attackHitDelay, attackRecipe } from '../game/a
 import { PARTICLES } from '../components/fxParticles';
 
 describe('signature attacks', () => {
-  it('gives every Edumón its own attack animation', () => {
+  it('gives every Vozimón its own attack animation', () => {
     for (const s of SPECIES) expect(ATTACKS[s.attack], `${s.name}: ${s.attack}`).toBeDefined();
     const looks = SPECIES.map((s) => JSON.stringify(attackRecipe(s.id)));
     expect(new Set(looks).size).toBe(SPECIES.length);
