@@ -119,9 +119,10 @@ export async function prepareListening(): Promise<void> {
 
 /**
  * Listen for the child reading creature `id`'s name. Resolves as soon as the name is heard, or
- * when the child stops talking / after a few seconds. `stop()` gives up (the result is then ignored).
+ * when the child stops talking / after a few seconds. `misses` are the tries that weren't understood
+ * before (each makes the check a little easier). `stop()` gives up (the result is then ignored).
  */
-export function listenFor(id: number, onHearing?: () => void): { result: Promise<ListenResult>; stop: () => void } {
+export function listenFor(id: number, misses: number, onHearing?: () => void): { result: Promise<ListenResult>; stop: () => void } {
   const R = recognizer();
   if (!R) return { result: Promise.resolve('unavailable'), stop: () => {} };
   const name = getSpecies(id).name;
@@ -133,7 +134,7 @@ export function listenFor(id: number, onHearing?: () => void): { result: Promise
   let timer = 0;
   let pause = 0;
   const heard = () => [...heardSet];
-  const verdict = (): ListenResult => (heardName(heard(), id) ? 'ok' : heardSet.size ? 'wrong' : 'silence');
+  const verdict = (): ListenResult => (heardName(heard(), id, misses) ? 'ok' : heardSet.size ? 'wrong' : 'silence');
 
   const finish = (r: ListenResult) => {
     if (finished) return;
@@ -178,7 +179,7 @@ export function listenFor(id: number, onHearing?: () => void): { result: Promise
         if (res[0]?.transcript) best.push(res[0].transcript.trim());
       }
       if (best.length > 1) heardSet.add(best.join(' ')); // "Tri" + "nín" said with a pause
-      if (heardName(heard(), id)) return finish('ok');
+      if (heardName(heard(), id, misses)) return finish('ok');
       // still talking? wait for a pause, then check what was said
       clearTimeout(pause);
       pause = window.setTimeout(stopListening, PAUSE_MS);

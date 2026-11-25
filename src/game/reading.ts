@@ -3,8 +3,26 @@
 
 import { SPECIES } from './creatures';
 
-/** How alike two names must sound (0..1) to count as read. */
-export const READ_MATCH = 0.7;
+/**
+ * How alike the reading must sound like the name (0..1) to count. Generous on purpose: the readers
+ * are young children just starting (and grown-ups with a foreign accent); perfect pronunciation
+ * can't be expected. Each try that wasn't understood makes the next one a little easier.
+ */
+export const READ_MATCH = 0.6;
+const EASIER_PER_MISS = 0.02;
+const READ_MATCH_MIN = 0.55;
+/** A longer word that only starts like the name (recognisers finish names as real words) counts a bit less. */
+const START_ONLY = 0.9;
+/** Much shorter than the name is only a piece of it (the first syllable or so). */
+const MIN_LENGTH = 0.65;
+/**
+ * When a reading was another Vozimón's name instead: it sounds the same as that one (SAME_NAME), or
+ * it sounds like it (OTHER_NAME) and clearly more than like this one (by MARGIN). A near tie counts
+ * for the name on screen ("chipín" is Chispín with its s swallowed, even if Chivín is a hair closer).
+ */
+const SAME_NAME = 0.95;
+const OTHER_NAME = 0.8;
+const MARGIN = 0.05;
 
 /**
  * How a word sounds in (Latin American) Spanish, as a plain key: accents and silent letters go,
@@ -33,34 +51,55 @@ export function soundKey(s: string): string {
   return t.replace(/(.)\1+/g, '$1');
 }
 
-/** Sounds that children (and recognisers) easily mix up: swapping them costs only half. */
-const NEAR = new Set(['ei', 'ou', 'rl', 'nm', 'dt', 'bp', 'kg', 'nN', 'yi'].flatMap((p) => [p, p[1] + p[0]]));
-const subCost = (a: string, b: string) => (a === b ? 0 : NEAR.has(a + b) ? 0.5 : 1);
+/**
+ * Sounds that beginning readers, foreign speakers and recognisers easily mix up: swapping them costs
+ * little. (Keys: X = ch, N = ñ, j = the Spanish jota.)
+ */
+const pairs = (list: string, cost: number) => list.split(' ').flatMap((p) => [[p, cost] as const, [p[1] + p[0], cost] as const]);
+const SWAP = new Map<string, number>([
+  // close vowels, voiced / voiceless, the nasals, r said as l
+  ...pairs('ei ou bp dt kg nm nN yi rl Xs', 0.35),
+  // any other vowel, r said as d or in the throat, sh-like sounds, ll said as l, the jota, f
+  ...pairs('ae ai ao au eo eu ia io iu rd ld rg rj Xy sy ly jk jg fb fp bm', 0.6),
+]);
+const subCost = (a: string, b: string) => (a === b ? 0 : (SWAP.get(a + b) ?? 1));
+/**
+ * Leaving out a sound of the name: half a mistake for the ones children swallow (an s or d, the r / l
+ * of "tr", "bl"...), a whole one otherwise. Sounds that weren't in the name always cost a whole one.
+ */
+const dropCost = (name: string, j: number) => {
+  const c = name[j];
+  if (c === 's' || c === 'd') return 0.5;
+  return (c === 'r' || c === 'l') && j > 0 && !'aeiou'.includes(name[j - 1]) ? 0.5 : 1;
+};
 
-function levenshtein(a: string, b: string): number {
-  if (a === b) return 0;
-  let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
-  for (let i = 1; i <= a.length; i++) {
-    const cur = [i];
-    for (let j = 1; j <= b.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + subCost(a[i - 1], b[j - 1]));
+/** How many mistakes apart what was heard is from the name (both as sound keys; weighted edit distance). */
+function distance(heard: string, name: string): number {
+  if (heard === name) return 0;
+  let prev = [0];
+  for (let j = 1; j <= name.length; j++) prev[j] = prev[j - 1] + dropCost(name, j - 1);
+  for (let i = 1; i <= heard.length; i++) {
+    const cur = [prev[0] + 1];
+    for (let j = 1; j <= name.length; j++) {
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + dropCost(name, j - 1), prev[j - 1] + subCost(heard[i - 1], name[j - 1]));
+    }
     prev = cur;
   }
-  return prev[b.length];
+  return prev[name.length];
 }
 
 /** 1 = sounds the same, 0 = nothing alike. */
 export function soundsAlike(a: string, b: string): number {
   const ka = soundKey(a);
   const kb = soundKey(b);
-  if (!ka || !kb) return 0;
-  return 1 - levenshtein(ka, kb) / Math.max(ka.length, kb.length);
+  return likeness(ka, kb);
 }
 
 let rosterKeys: { id: number; key: string }[] | null = null;
 const keys = () => (rosterKeys ??= SPECIES.map((s) => ({ id: s.id, key: soundKey(s.name) })));
 
 function likeness(key: string, other: string) {
-  return key && other ? 1 - levenshtein(key, other) / Math.max(key.length, other.length) : 0;
+  return key && other ? Math.max(0, 1 - distance(key, other) / Math.max(key.length, other.length)) : 0;
 }
 
 /** The pieces of a transcript that might be the name: single words, 2–3 words run together, all of it. */
@@ -75,22 +114,30 @@ function pieces(transcript: string): string[] {
 }
 
 /**
- * Did the child read this creature's name? `heard` are the recogniser's guesses. A guess counts
- * when it sounds enough like the name and not more like any other Vozimón's name (so "Lanita"
- * doesn't count for Ranita, but "ranitas" or "Anita" do). Recognisers like to finish invented
- * names as real words ("Trinín" → "Trinidad"), so a longer word is also compared by its start.
+ * Did the child read this creature's name? `heard` are the recogniser's guesses, `misses` the tries
+ * that weren't understood so far (each one lowers the bar a little). A guess counts when it sounds
+ * enough like the name, unless it clearly is another Vozimón's name (so "Lanita" doesn't count for
+ * Ranita, nor "Trinero" for Trinín, but "ranitas", "Anita" or a muddled reading do: the child is
+ * looking at this name). Recognisers like to finish invented names as real words ("Trinín" →
+ * "Trinidad"), so a longer word is also compared by its start.
  */
-export function heardName(heard: string[], id: number): boolean {
+export function heardName(heard: string[], id: number, misses = 0): boolean {
   const all = keys();
   const target = all.find((k) => k.id === id);
   if (!target) return false;
+  const need = Math.max(READ_MATCH_MIN, READ_MATCH - misses * EASIER_PER_MISS);
   for (const t of heard) {
     for (const p of pieces(t)) {
       const k = soundKey(p);
+      if (k.length < target.key.length * MIN_LENGTH) continue;
       const start = k.length > target.key.length ? k.slice(0, target.key.length) : k;
-      const s = Math.max(likeness(k, target.key), likeness(start, target.key));
-      if (s < READ_MATCH) continue;
-      if (all.every((o) => o.id === id || (likeness(k, o.key) <= s && likeness(start, o.key) <= s))) return true;
+      const s = Math.max(likeness(k, target.key), START_ONLY * likeness(start, target.key));
+      if (s < need) continue;
+      const wasOther = (o: { key: string }) => {
+        const l = Math.max(likeness(k, o.key), START_ONLY * likeness(start, o.key));
+        return l > s && (l >= SAME_NAME || (l >= OTHER_NAME && l - s >= MARGIN));
+      };
+      if (!all.some((o) => o.id !== id && wasOther(o))) return true;
     }
   }
   return false;

@@ -28,6 +28,28 @@ describe('reading names out loud', () => {
     expect(heardName(['trenin'], id('Trinín'))).toBe(true);
     expect(heardName(['trine'], id('Trinín'))).toBe(true);
     expect(heardName(['Trinero'], id('Trinín'))).toBe(false); // that's its evolution
+    // a swallowed s or cluster: counts for the name on screen even if another name is a hair closer
+    expect(heardName(['chipin'], id('Chispín'))).toBe(true); // (Chivín)
+    expect(heardName(['tinin'], id('Trinín'))).toBe(true); // (Dinín)
+    expect(heardName(['basón'], id('Brasón'))).toBe(true);
+  });
+
+  it('is generous with beginners and foreign accents', () => {
+    expect(heardName(['lubulkan'], id('Lobolcán'))).toBe(true); // o → u, c → k
+    expect(heardName(['lamisielbo'], id('Ramiciervo'))).toBe(true); // r → l
+    expect(heardName(['shispin'], id('Chispín'))).toBe(true); // ch → sh
+    expect(heardName(['gatan'], id('Gotín'))).toBe(true); // two vowels off in a short name
+    expect(heardName(['etelin'], id('Estrellín'))).toBe(true); // s and r swallowed
+    expect(heardName(['bulcareks'], id('Volcarex'))).toBe(true);
+  });
+
+  it('gets a little easier after each try that was not understood', () => {
+    expect(heardName(['facan'], id('Focín'), 0)).toBe(false);
+    expect(heardName(['facan'], id('Focín'), 3)).toBe(true);
+    // but never takes other words or another Vozimón's name
+    expect(heardName(['gato'], id('Chispín'), 10)).toBe(false);
+    expect(heardName(['Lanita'], id('Ranita'), 10)).toBe(false);
+    expect(heardName(['Trinero'], id('Trinín'), 10)).toBe(false);
   });
 
   it('does not count other words or another Vozimón', () => {
@@ -36,7 +58,14 @@ describe('reading names out loud', () => {
     expect(heardName([], id('Chispín'))).toBe(false);
     expect(heardName(['no sé'], id('Gotín'))).toBe(false);
     expect(heardName(['Lanita'], id('Ranita'))).toBe(false);
-    for (const a of SPECIES) for (const b of SPECIES) if (a.id !== b.id) expect(heardName([a.name], b.id), `${a.name} → ${b.name}`).toBe(false);
+    expect(heardName(['pan'], id('Brasón'))).toBe(false); // only a piece of it
+    for (const a of SPECIES) {
+      for (const b of SPECIES) {
+        if (a.id === b.id) continue;
+        expect(heardName([a.name], b.id), `${a.name} → ${b.name}`).toBe(false);
+        expect(heardName([a.name], b.id, 10), `${a.name} → ${b.name} (after many tries)`).toBe(false);
+      }
+    }
   });
 
   it('folds letters that sound the same', () => {

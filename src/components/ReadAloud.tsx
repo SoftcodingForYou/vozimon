@@ -58,7 +58,7 @@ export function ReadAloud({ id, onRead, onSkip, onClose, closeAfter = 0 }: Props
     if (phase !== 'listen') return;
     let live = true;
     setHearing(false);
-    const l = listenFor(id, () => live && setHearing(true));
+    const l = listenFor(id, misses, () => live && setHearing(true));
     void l.result.then((r) => {
       if (!live) return;
       if (r === 'ok') success();

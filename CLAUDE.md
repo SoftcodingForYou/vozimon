@@ -91,9 +91,14 @@ classic Game Boy monster-collecting games. All creatures, names, art, sounds and
   service; Safari: Apple's; Firefox: none) listens in `es-CL` while music and sounds are muted. It
   keeps listening across pauses (children read syllable by syllable; pieces are joined) and stops
   2.2 s after the child stops talking (9 s at most). `heardName` (`game/reading.ts`) compares by
-  sound and forgivingly (v/b, z/s, ll/y, accents, half cost for e/i, o/u, r/l, n/m, d/t, b/p, k/g,
-  words run together, real-word completions like "Trinidad" for Trinín) but never accepts a guess
-  closer to another Vozimón's name. What was heard is logged to the console (`[Vozimón] Leer`) and,
+  sound and generously, since beginning readers (and foreign accents) can't pronounce perfectly:
+  v/b, z/s, ll/y and accents are the same; close sounds cost about a third of a mistake (e/i, o/u,
+  r/l, n/m, d/t, b/p, k/g, ch/s), other vowels, r/d, sh-like sounds about half; a swallowed s or d,
+  or the r/l of a cluster ("tr" → "t") cost half; words run together and real-word completions
+  ("Trinidad" for Trinín) count. 60 % alike is enough, a little less after each miss (55 % at
+  least). It never takes a much shorter piece, nor another Vozimón's name (a reading that sounds
+  the same as another name, or clearly more like it; a near tie counts for the name on screen).
+  What was heard is logged to the console (`[Vozimón] Leer`) and,
   with `?debug`, shown on the syllables screen. Read → stars and
   "¡Muy bien!", saved in `SaveSlot.read` (a star on the page, in the grid and a count in the header).
   Not understood → only the name in coloured syllables (`syllables`) and "Otra vez". A ✕ in the
