@@ -123,6 +123,14 @@ classic Game Boy monster-collecting games. All creatures, names, art, sounds and
   optional `&sp=25&mode=easy&biome=4&caught=12&team=1,4,7&font=pixel&upper=1&reading=0&map=santiago`
   (`biome=7` is the city battle background). `?debug` exposes the world state as `window.__vozi.world`.
 
+## Brand (`brand/`, repo root)
+
+The whole Vozimón brand package: horizontal logo, stacked logo, mark (isotipo), star ball and app
+icon in colour / white (`-blanco`) / ink (`-tinta`), as SVG and PNG, square profile pictures and web
+icons. `brand/README.md` says which file is for what. The title screen imports
+`brand/svg/vozimon-logo.svg` directly; the icons the page uses are copies in `public/` (favicon,
+apple-touch-icon, `manifest.webmanifest` icons), because Vite only serves that folder.
+
 ## Architecture (src/)
 
 - `game/` – `creatures.ts` (roster as evolution families; numbers are assigned in list order),
@@ -140,8 +148,6 @@ classic Game Boy monster-collecting games. All creatures, names, art, sounds and
   input handlers, key capture, keyboard/touch/gamepad source), `audio.ts` (Web Audio SFX, per-type
   attack sounds, original chiptunes), `files.ts` (save-to-folder / pick-a-file dialogs), `listen.ts`
   (speech recognition for reading names out loud).
-- `brand/` – the logo from the Vozimón brand package (title screen, README). The icons from the same
-  package are in `public/` (favicon, apple-touch-icon, `manifest.webmanifest` icons).
 - `components/` – React screens: TitleScreen, SlotMenu, NewGame, Play (saving/resuming, HUD),
   WorldView, Battle, AttackFx (signature attack effects + KO stars; shapes in `fxParticles.tsx`),
   AttackShowcase (`?demo=attacks`, seekable for recording), CreaturePicker, Dex, ReadAloud

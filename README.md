@@ -1,4 +1,4 @@
-<p align="center"><img src="src/brand/vozimon-logo.svg" alt="Vozimón" width="480"></p>
+<p align="center"><img src="brand/svg/vozimon-logo.svg" alt="Vozimón" width="480"></p>
 
 # Vozimón
 

@@ -3,7 +3,7 @@ import { useInput } from '../system/input';
 import { playMusic, sfx } from '../system/audio';
 import { ballURL, genericURL } from '../art/assets';
 import { LAYER, A, Bb, Qq, Ee, Tt, Mm, DirKeys, Sparkle } from './ui';
-import logoURL from '../brand/vozimon-logo.svg';
+import logoURL from '../../brand/svg/vozimon-logo.svg';
 
 export function TitleScreen({ onStart }: { onStart: () => void }) {
   useEffect(() => {

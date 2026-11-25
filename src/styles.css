@@ -1,5 +1,5 @@
 :root {
-  /* Brand palette (the Vozimón brand package; the logo lives in src/brand/) */
+  /* Brand palette (the Vozimón brand package in brand/; see brand/README.md) */
   --ink: #2a2238; /* every outline */
   --night: #241c38;
   --paper: #fffdf4;
@@ -433,7 +433,7 @@ body {
   background: var(--grass-dark);
 }
 
-/* the brand logo (src/brand/vozimon-logo.svg): an image, so Mayúsculas and the letter style
+/* the brand logo (brand/svg/vozimon-logo.svg): an image, so Mayúsculas and the letter style
    never change it */
 .logo {
   z-index: 1;
