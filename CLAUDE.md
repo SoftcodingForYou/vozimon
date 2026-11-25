@@ -98,7 +98,7 @@ classic Game Boy monster-collecting games. All creatures, names, art, sounds and
   "¡Muy bien!", saved in `SaveSlot.read` (a star on the page, in the grid and a count in the header).
   Not understood → only the name in coloured syllables (`syllables`) and "Otra vez". A ✕ in the
   overlay's top-right corner (or B) gives up without a star: when practising in the Vozidex it is
-  always there; on the new page after a catch only after 5 misses (`TRIES_BEFORE_SKIP`). Only when
+  always there; on the new page after a catch only after 3 misses (`TRIES_BEFORE_SKIP`). Only when
   nothing can listen (no recognition, no microphone permission, microphone broken) a grown-up
   confirms with "✓ Lo leyó bien" (with a short note why). Child-facing texts here stay a word or
   two: the children are just learning to read.

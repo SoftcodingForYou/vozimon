@@ -8,7 +8,7 @@ import { Menu, LAYER, FitText, MicIcon, MicOffIcon, StarIcon, CheckMark, CrossMa
 
 const LAYER_READ = LAYER.dialog + 2;
 /** On the new page after a catch, the ✕ in the corner shows after this many tries that weren't understood. */
-export const TRIES_BEFORE_SKIP = 5;
+export const TRIES_BEFORE_SKIP = 3;
 const DEBUG = typeof location !== 'undefined' && new URLSearchParams(location.search).has('debug');
 
 /** Why nothing listens (a short note for the grown-up who then confirms with ✓). */
