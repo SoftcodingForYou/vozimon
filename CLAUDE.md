@@ -105,7 +105,14 @@ classic Game Boy monster-collecting games. All creatures, names, art, sounds and
   overlay's top-right corner (or B) gives up without a star: when practising in the Vozidex it is
   always there; on the new page after a catch only after 3 misses (`TRIES_BEFORE_SKIP`). Only when
   nothing can listen (no recognition, no microphone permission, microphone broken) a grown-up
-  confirms with "✓ Lo leyó bien" (with a short note why). Child-facing texts here stay a word or
+  confirms with "✓ Lo leyó bien" (with a short note why). So grown-ups find problems before playing, a
+  setup check (`checkListening` / `listenStatus` in `listen.ts`, `components/SpeechCheck.tsx`) looks
+  at the browser, microphone permission, the on-device Spanish pack, internet and the last listening
+  error (`vozimon.voz.v1`, kept until listening works again). With reading on, the title screen shows
+  a small warning when something is missing (tap it), and starting pops the check up (once per visit;
+  its "Jugar" goes on to the game list); Ajustes → Micrófono always opens the check,
+  which offers "Dar permiso", "Descargar voz" and a "Probar" test. It also opens right after reading
+  is switched on. Child-facing texts here stay a word or
   two: the children are just learning to read.
 - Tipos (type chart): just the list of the 13 types, all on screen without scrolling.
 - Battles: every one of the 151 attacks has its own signature animation and sound

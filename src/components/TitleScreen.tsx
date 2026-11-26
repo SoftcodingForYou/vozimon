@@ -1,18 +1,33 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useInput } from '../system/input';
 import { playMusic, sfx } from '../system/audio';
 import { ballURL, genericURL } from '../art/assets';
-import { LAYER, A, Bb, Qq, Ee, Tt, Mm, DirKeys, Sparkle } from './ui';
+import { LAYER, A, Bb, Qq, Ee, Tt, Mm, DirKeys, Sparkle, MicOffIcon } from './ui';
+import { listenStatus } from '../system/listen';
+import { SpeechCheck, useListenCheck } from './SpeechCheck';
 import logoURL from '../../brand/svg/vozimon-logo.svg';
 
-export function TitleScreen({ onStart }: { onStart: () => void }) {
+/** The check popped up on the way into the game already during this visit (it shouldn't nag every time). */
+let checkShown = false;
+
+/**
+ * `reading`: reading aloud is on (the point of the game), so if listening isn't ready here a grown-up
+ * is told: a warning in the corner, and the check pops up once per visit when starting.
+ */
+export function TitleScreen({ onStart, reading = false }: { onStart: () => void; reading?: boolean }) {
+  const [check] = useListenCheck(reading);
+  const [micOpen, setMicOpen] = useState<false | 'tap' | 'start'>(false);
+  const status = reading && check ? listenStatus(check) : 'ok';
   useEffect(() => {
     playMusic('title');
   }, []);
 
   const start = () => {
     sfx('ok');
-    onStart();
+    if (status !== 'ok' && !checkShown) {
+      checkShown = true;
+      setMicOpen('start'); // "Jugar" in it goes on into the game
+    } else onStart();
   };
 
   useInput((e) => {
@@ -20,7 +35,37 @@ export function TitleScreen({ onStart }: { onStart: () => void }) {
   }, LAYER.screen);
 
   return (
+    <>
+      <Title onStart={start} warning={status === 'ok' ? null : status} onWarning={() => setMicOpen('tap')} />
+      {micOpen && (
+        <SpeechCheck
+          closeLabel={micOpen === 'start' ? 'Jugar' : 'Volver'}
+          onClose={() => {
+            setMicOpen(false);
+            if (micOpen === 'start') onStart();
+          }}
+        />
+      )}
+    </>
+  );
+}
+
+function Title({ onStart: start, warning, onWarning }: { onStart: () => void; warning: 'setup' | 'none' | null; onWarning: () => void }) {
+  return (
     <div className="screen title-screen" onClick={start}>
+      {warning && (
+        // for grown-ups: reading aloud won't work yet (tap for what's missing)
+        <button
+          className={'mic-warning ' + warning}
+          onClick={(e) => {
+            e.stopPropagation();
+            onWarning();
+          }}
+        >
+          <MicOffIcon size={22} />
+          {warning === 'none' ? 'Este navegador no escucha' : 'Micrófono sin configurar'}
+        </button>
+      )}
       <div className="sky">
         <div className="cloud c1" />
         <div className="cloud c2" />

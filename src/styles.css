@@ -3156,3 +3156,76 @@ body {
     transform: translateX(9px) rotate(4deg);
   }
 }
+
+/* ------------------------------------------------------------- microphone check (for grown-ups) */
+
+.mic-warning {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 12px;
+  font: inherit;
+  font-size: calc(18px * var(--fs, 1));
+  color: var(--ink);
+  background: var(--star);
+  border: 3px solid var(--ink);
+  border-radius: 10px;
+  box-shadow: 0 3px 0 var(--ink);
+  cursor: pointer;
+}
+.mic-warning.none {
+  background: var(--paper-shade);
+}
+
+.speech-check {
+  width: 600px;
+}
+.speech-check .dialog-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.speech-sub {
+  margin: -6px 0 10px;
+  font-size: calc(19px * var(--fs, 1));
+  text-align: center;
+  opacity: 0.75;
+}
+.speech-rows {
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+  font-size: calc(21px * var(--fs, 1));
+  line-height: 1.25;
+}
+.speech-rows li {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  margin: 6px 0;
+}
+.speech-mark {
+  flex: none;
+  width: 1.4em;
+  height: 1.4em;
+  line-height: 1.4em;
+  text-align: center;
+  font-weight: bold;
+  color: #fff;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+}
+.speech-rows .ok .speech-mark {
+  background: var(--good);
+}
+.speech-rows .warn .speech-mark {
+  background: var(--gold);
+}
+.speech-rows .bad .speech-mark {
+  background: var(--bad);
+}

@@ -175,7 +175,7 @@ export function App() {
         {demo?.screen === 'attacks' && (
           <AttackShowcase capture={new URLSearchParams(location.search).has('capture')} start={Number(new URLSearchParams(location.search).get('sp') ?? 1)} />
         )}
-        {screen.k === 'title' && demo?.screen !== 'attacks' && <TitleScreen onStart={() => setScreen({ k: 'slots' })} />}
+        {screen.k === 'title' && demo?.screen !== 'attacks' && <TitleScreen reading={settings.reading} onStart={() => setScreen({ k: 'slots' })} />}
         {screen.k === 'slots' && (
           <>
             <SlotMenu
