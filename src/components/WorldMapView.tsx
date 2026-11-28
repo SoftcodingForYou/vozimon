@@ -5,6 +5,7 @@ import { ELEMS } from '../game/elements';
 import type { WorldMap } from '../world/tiles';
 import { zoneOfPlayer, type WorldState } from '../world/world';
 import { useInput } from '../system/input';
+import { CLOSE_WORDS, SAY, useVoice } from '../system/voice';
 import { sfx } from '../system/audio';
 import { LAYER, KeyHint, Bb, TypeIcon } from './ui';
 
@@ -73,12 +74,17 @@ export function WorldMapView({ world, caught, avatar, onClose }: { world: WorldS
     void document.fonts?.ready.then(clamp);
   }, [m, mapW]);
 
+  const close = () => {
+    sfx('back');
+    onClose();
+  };
+
   useInput((e) => {
-    if (e.btn === 'b' || e.btn === 'a' || e.btn === 'map') {
-      sfx('back');
-      onClose();
-    }
+    if (e.btn === 'b' || e.btn === 'a' || e.btn === 'map') close();
   }, LAYER.dex);
+
+  // playing by voice: «cerrar», «cancelar», «volver» (or «mapa» again)
+  useVoice({ cmds: [{ words: CLOSE_WORDS, run: close }, { words: SAY.mapa, run: close }] }, LAYER.dex);
 
   const p = world.player;
   const here = m.zones[zoneOfPlayer(world)];

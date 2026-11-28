@@ -6,6 +6,9 @@ import type { ArtSpec } from '../art/creatureArt';
 
 export type Habitat = 'pradera' | 'bosque' | 'lago' | 'playa' | 'montana' | 'cumbre' | 'volcan';
 
+/** Every word starts with a capital letter: "Bola de fuego" → "Bola De Fuego". */
+export const capitalizeWords = (s: string) => s.replace(/(^|\s)(\S)/g, (_, space: string, c: string) => space + c.toUpperCase());
+
 export const HABITAT_NAMES: Record<Habitat, string> = {
   pradera: 'la pradera',
   bosque: 'el bosque',
@@ -23,7 +26,8 @@ export interface Species {
   id: number;
   name: string;
   types: Elem[];
-  attack: string;
+  attack: string; // the attack's key (its signature animation in game/attacks.ts)
+  attackName: string; // how players see it: every word capitalised ("Bola De Fuego")
   habitats: Habitat[];
   desc: string;
   stage: number; // 1-based position in its evolution family
@@ -988,6 +992,7 @@ function build(): Species[] {
         name: m.n,
         types: [...types],
         attack: m.a,
+        attackName: capitalizeWords(m.a),
         habitats: [...habitats],
         desc: m.d,
         stage: i + 1,

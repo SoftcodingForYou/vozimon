@@ -15,6 +15,7 @@ import {
 import { SPECIES, STARTERS } from './game/creatures';
 import type { Encounter } from './world/world';
 import { playMusic, setMusicEnabled, setSoundEnabled } from './system/audio';
+import { setVoiceEnabled } from './system/voice';
 import { setBindings } from './system/input';
 import { TitleScreen } from './components/TitleScreen';
 import { SlotMenu } from './components/SlotMenu';
@@ -33,7 +34,7 @@ interface Demo {
   look: Partial<Settings>; // letter style to try out (never saved)
 }
 
-/** Test/preview hook, e.g. ?demo=battle&sp=25&mode=easy&team=1,4,7&font=pixel&upper=1&reading=1 (never saved). */
+/** Test/preview hook, e.g. ?demo=battle&sp=25&mode=easy&team=1,4,7&font=pixel&upper=1&reading=1&voice=1 (never saved). */
 function parseDemo(): Demo | null {
   if (typeof location === 'undefined') return null;
   const q = new URLSearchParams(location.search);
@@ -67,6 +68,7 @@ function parseDemo(): Demo | null {
   if (q.get('font') === 'pixel' || q.get('font') === 'fine') look.font = q.get('font') as Settings['font'];
   if (q.has('upper')) look.upper = q.get('upper') !== '0';
   if (q.has('reading')) look.reading = q.get('reading') !== '0';
+  if (q.has('voice')) look.voice = q.get('voice') !== '0';
   return { slot, screen, enc, look };
 }
 
@@ -113,6 +115,13 @@ export function App() {
   useEffect(() => {
     setBindings(settings.keys);
   }, [settings.keys]);
+
+  useEffect(() => {
+    setVoiceEnabled(settings.voice);
+  }, [settings.voice]);
+
+  // reading aloud or playing by voice need the microphone (the title screen and game list check it)
+  const needsMic = settings.reading || settings.voice;
 
   useEffect(() => {
     if (screen.k === 'slots' || screen.k === 'new' || screen.k === 'import') playMusic('title');
@@ -175,7 +184,7 @@ export function App() {
         {demo?.screen === 'attacks' && (
           <AttackShowcase capture={new URLSearchParams(location.search).has('capture')} start={Number(new URLSearchParams(location.search).get('sp') ?? 1)} />
         )}
-        {screen.k === 'title' && demo?.screen !== 'attacks' && <TitleScreen reading={settings.reading} onStart={() => setScreen({ k: 'slots' })} />}
+        {screen.k === 'title' && demo?.screen !== 'attacks' && <TitleScreen needsMic={needsMic} onStart={() => setScreen({ k: 'slots' })} />}
         {screen.k === 'slots' && (
           <>
             <SlotMenu
@@ -192,6 +201,7 @@ export function App() {
                 setSlots(list);
               }}
               onSettings={() => setShowSettings(true)}
+              needsMic={needsMic}
             />
             {!storageIsPersistent() && <p className="storage-warning">Este navegador no deja guardar partidas (¿modo privado?).</p>}
             {showSettings && <SettingsPanel settings={settings} onChange={changeSettings} onClose={() => setShowSettings(false)} />}

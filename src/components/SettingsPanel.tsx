@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Settings } from '../game/save';
-import { Menu, LAYER, KeyHint, A, Bb } from './ui';
+import { Menu, LAYER, KeyHint, A, Bb, type Opt } from './ui';
 import { KeyBindingsPanel } from './KeyBindingsPanel';
 import { ConfirmDialog } from './ConfirmDialog';
 import { canListen, listenStatus, prepareListening } from '../system/listen';
@@ -25,72 +25,111 @@ function toggleFullscreen() {
   }
 }
 
+/**
+ * Ajustes: what grown-ups set most (microphone, reading aloud, playing by voice, music, sounds) and,
+ * one level down, "Avanzado" (letters, capitals, keys, full screen).
+ */
 export function SettingsPanel({ settings, onChange, onClose, layer = LAYER.dialog }: Props) {
+  const [page, setPage] = useState<'main' | 'advanced'>('main');
+  const [mainStart, setMainStart] = useState(0); // back from Avanzado: that option stays chosen
   const [keysOpen, setKeysOpen] = useState(false);
-  const [askReading, setAskReading] = useState(false);
+  const [ask, setAsk] = useState<'reading' | 'voice' | null>(null); // a grown-up decides about the microphone
   const [micOpen, setMicOpen] = useState(false);
   const [preparing, setPreparing] = useState<Promise<unknown> | undefined>();
   const [check] = useListenCheck(!micOpen); // checked again when the check panel closes
-  const options = [
-    { label: `Sonidos: ${yesNo(settings.sound)}` },
+  const status = check ? listenStatus(check) : null;
+  const micMissing = (settings.reading || settings.voice) && status !== null && status !== 'ok';
+
+  const main: Opt[] = [
+    { label: `Micrófono: ${status ? STATUS_TEXT[status] : '…'}`, sub: 'Comprobar que puede escuchar', className: micMissing ? 'mic-need' : undefined },
+    { label: `Leer en voz alta: ${yesNo(settings.reading)}`, sub: 'Leer los nombres al micrófono' },
+    { label: `Jugar con la voz: ${yesNo(settings.voice)}`, sub: 'Decir «atacar», «mapa» o un nombre' },
     { label: `Música: ${yesNo(settings.music)}` },
+    { label: `Sonidos: ${yesNo(settings.sound)}` },
+    { label: 'Avanzado' }, // letters, capitals, keys, full screen
+    { label: 'Volver' },
+  ];
+  const advanced: Opt[] = [
     {
       label: `Letra: ${settings.font === 'pixel' ? 'Píxel' : 'Fina'}`,
       sub: settings.font === 'pixel' ? 'Letra de videojuego antiguo' : 'Letra clara para aprender a leer',
     },
     { label: `Mayúsculas: ${yesNo(settings.upper)}`, sub: settings.upper ? 'TODO EN MAYÚSCULAS' : 'Mayúsculas y minúsculas' },
-    { label: `Leer en voz alta: ${yesNo(settings.reading)}`, sub: 'Leer los nombres al micrófono' },
-    { label: `Micrófono: ${check ? STATUS_TEXT[listenStatus(check)] : '…'}`, sub: 'Comprobar que puede escuchar' },
     { label: 'Teclas', sub: 'Elige qué tecla hace cada cosa' },
     { label: 'Pantalla completa' },
     { label: 'Volver' },
   ];
+
+  const openCheck = (pending?: Promise<unknown>) => {
+    setPreparing(pending);
+    setMicOpen(true);
+  };
+  const backToMain = () => {
+    setMainStart(5);
+    setPage('main');
+  };
+
+  const selectMain = (i: number) => {
+    if (i === 0) openCheck();
+    else if (i === 1) {
+      if (settings.reading) onChange({ ...settings, reading: false });
+      else setAsk('reading');
+    } else if (i === 2) {
+      if (settings.voice) onChange({ ...settings, voice: false });
+      else setAsk('voice');
+    } else if (i === 3) onChange({ ...settings, music: !settings.music });
+    else if (i === 4) onChange({ ...settings, sound: !settings.sound });
+    else if (i === 5) setPage('advanced');
+    else onClose();
+  };
+  const selectAdvanced = (i: number) => {
+    if (i === 0) onChange({ ...settings, font: settings.font === 'pixel' ? 'fine' : 'pixel' });
+    else if (i === 1) onChange({ ...settings, upper: !settings.upper });
+    else if (i === 2) setKeysOpen(true);
+    else if (i === 3) toggleFullscreen();
+    else backToMain();
+  };
+
+  const askText =
+    ask === 'reading'
+      ? canListen()
+        ? 'Para adultos: el navegador escucha la voz para comprobar la lectura (a veces la envía a Google o Apple). ¿Activar el micrófono?'
+        : 'Para adultos: este navegador no puede escuchar. Un adulto confirmará la lectura con ✓. ¿Activar?'
+      : canListen()
+        ? 'Para adultos: el micrófono escucha todo el rato mientras se juega, para entender «atacar», «mapa» o el nombre de un Vozimón (sin la voz en español instalada, el navegador la envía a Google o Apple). ¿Activar?'
+        : 'Para adultos: este navegador no puede escuchar, pero los botones seguirán funcionando como siempre. ¿Activar?';
+
   return (
     <div className="dialog-backdrop">
       <div className="panel dialog settings">
-        <p className="dialog-title">Ajustes</p>
+        <p className="dialog-title">{page === 'main' ? 'Ajustes' : 'Avanzado'}</p>
         <Menu
+          key={page}
           scroll
-          options={options}
+          options={page === 'main' ? main : advanced}
+          initial={page === 'main' ? mainStart : 0}
           layer={layer}
-          active={!keysOpen && !askReading && !micOpen}
-          onBack={onClose}
-          onSelect={(i) => {
-            if (i === 0) onChange({ ...settings, sound: !settings.sound });
-            else if (i === 1) onChange({ ...settings, music: !settings.music });
-            else if (i === 2) onChange({ ...settings, font: settings.font === 'pixel' ? 'fine' : 'pixel' });
-            else if (i === 3) onChange({ ...settings, upper: !settings.upper });
-            else if (i === 4) {
-              if (settings.reading) onChange({ ...settings, reading: false });
-              else setAskReading(true); // a grown-up decides about the microphone
-            } else if (i === 5) {
-              setPreparing(undefined);
-              setMicOpen(true);
-            } else if (i === 6) setKeysOpen(true);
-            else if (i === 7) toggleFullscreen();
-            else onClose();
-          }}
+          active={!keysOpen && !ask && !micOpen}
+          onBack={page === 'main' ? onClose : backToMain}
+          onSelect={page === 'main' ? selectMain : selectAdvanced}
         />
         <KeyHint>
           <A /> Cambiar &nbsp; <Bb /> Volver
         </KeyHint>
       </div>
-      {askReading && (
+      {ask && (
         <ConfirmDialog
-          text={
-            canListen()
-              ? 'Para adultos: el navegador escucha la voz para comprobar la lectura (a veces la envía a Google o Apple). ¿Activar el micrófono?'
-              : 'Para adultos: este navegador no puede escuchar. Un adulto confirmará la lectura con ✓. ¿Activar?'
-          }
+          text={askText}
           yes="Activar"
           layer={layer + 5}
           onAnswer={(yes) => {
-            setAskReading(false);
+            const what = ask;
+            setAsk(null);
             if (!yes) return;
-            onChange({ ...settings, reading: true });
+            onChange(what === 'reading' ? { ...settings, reading: true } : { ...settings, voice: true });
             if (!canListen()) return;
-            setPreparing(prepareListening()); // asks for the microphone now, while the grown-up is here
-            setMicOpen(true); // ...and shows whether everything is ready
+            // asks for the microphone now, while the grown-up is here, and shows whether everything is ready
+            openCheck(prepareListening());
           }}
         />
       )}

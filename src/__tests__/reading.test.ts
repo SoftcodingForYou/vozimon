@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SPECIES } from '../game/creatures';
-import { heardName, soundKey, syllables } from '../game/reading';
+import { WORD_MATCH, bestName, heardName, soundKey, syllables, wordScore } from '../game/reading';
 
 const id = (name: string) => SPECIES.find((s) => s.name === name)!.id;
 
@@ -105,5 +105,49 @@ describe('reading names out loud', () => {
       expect(parts.join(''), s.name).toBe(s.name);
       expect(parts.every((p) => /[aeiouáéíóúü]/i.test(p)), `${s.name}: ${parts.join('-')}`).toBe(true);
     }
+  });
+});
+
+describe('playing by voice', () => {
+  const said = (heard: string, words: string[]) => wordScore([heard], words) >= WORD_MATCH;
+
+  it('understands the command words, also inside a sentence', () => {
+    expect(said('mapa', ['mapa'])).toBe(true);
+    expect(said('abre el mapa', ['mapa'])).toBe(true);
+    expect(said('Mapa.', ['mapa'])).toBe(true);
+    expect(said('tipos', ['tipos', 'tipo'])).toBe(true);
+    expect(said('ataca', ['atacar', 'ataca'])).toBe(true);
+    expect(said('¡Atacar!', ['atacar'])).toBe(true);
+    expect(said('huir', ['huir', 'huye'])).toBe(true);
+    expect(said('cancelar', ['cerrar', 'cancelar', 'volver'])).toBe(true);
+  });
+
+  it('hears the invented word Vozidex however it is written', () => {
+    for (const heard of ['vozidex', 'Vozidex', 'voz y dex', 'vosidex', 'boxi dex', 'bossy dex', 'vozi dex']) {
+      expect(said(heard, ['vozidex']), heard).toBe(true);
+    }
+  });
+
+  it('does not take similar everyday words', () => {
+    expect(said('mamá', ['mapa'])).toBe(false);
+    expect(said('papá', ['mapa'])).toBe(false);
+    expect(said('tapa', ['mapa'])).toBe(false);
+    expect(said('cambiar', ['huir', 'huye'])).toBe(false);
+    expect(said('hola', ['atacar', 'ataca'])).toBe(false);
+    expect(said('', ['mapa'])).toBe(false);
+  });
+
+  it('finds the Vozimón that was called', () => {
+    const team = [id('Chispín'), id('Ranita'), id('Trinín'), id('Gotín')];
+    expect(bestName(['Ranita'], team)).toBe(id('Ranita'));
+    expect(bestName(['chispin'], team)).toBe(id('Chispín'));
+    expect(bestName(['quiero a trinín'], team)).toBe(id('Trinín'));
+    expect(bestName(['el gato', 'gotín'], team)).toBe(id('Gotín')); // any of the guesses
+    expect(bestName(['hola'], team)).toBe(null);
+    expect(bestName([], team)).toBe(null);
+    // another Vozimón's name doesn't pick a similar one from the list
+    expect(bestName(['Trinero'], team)).toBe(null);
+    expect(bestName(['Lanita'], team)).toBe(null);
+    expect(bestName(['Trinero'], [...team, id('Trinero')])).toBe(id('Trinero'));
   });
 });

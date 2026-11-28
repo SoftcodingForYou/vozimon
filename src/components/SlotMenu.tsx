@@ -7,6 +7,8 @@ import { MAP_NAMES } from '../world/tiles';
 import { sfx } from '../system/audio';
 import { Menu, LAYER, BallIcon, EyeIcon, KeyHint, A, Bb } from './ui';
 import { ConfirmDialog } from './ConfirmDialog';
+import { SpeechCheck, useListenCheck } from './SpeechCheck';
+import { listenStatus } from '../system/listen';
 
 const GAME_FILE: FileKind = { description: 'Partida de Vozimón', ext: EXPORT_EXT, alsoOpens: OLD_EXPORT_EXTS };
 
@@ -19,12 +21,25 @@ interface Props {
   onSettings: () => void;
   onBack: () => void;
   active: boolean;
+  needsMic: boolean; // reading aloud or playing by voice is on: the microphone must be ready
 }
 
-export function SlotMenu({ slots, onPlay, onNew, onImport, onDelete, onSettings, onBack, active }: Props) {
+export function SlotMenu({ slots, onPlay, onNew, onImport, onDelete, onSettings, onBack, active, needsMic }: Props) {
   const [chosen, setChosen] = useState<SaveSlot | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<SaveSlot | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [micOpen, setMicOpen] = useState(false);
+  const [check, recheck] = useListenCheck();
+  const status = check ? listenStatus(check) : null;
+  // calls for the grown-up in red while listening isn't ready (and something needs it)
+  const micMissing = needsMic && status !== null && status !== 'ok';
+  const micLabel = micMissing
+    ? status === 'none'
+      ? 'Este navegador no escucha'
+      : '¡Configura el micrófono!'
+    : status === 'ok'
+      ? 'Micrófono: listo'
+      : 'Micrófono';
 
   // Load a game from a file (exported on this or another device); the file isn't needed afterwards.
   const importFile = () => {
@@ -53,6 +68,7 @@ export function SlotMenu({ slots, onPlay, onNew, onImport, onDelete, onSettings,
     })),
     { label: '+ Nueva partida', className: 'new-opt' },
     { label: 'Cargar de un archivo', className: 'import-opt' },
+    { label: micLabel, className: 'mic-opt' + (micMissing ? ' mic-need' : '') },
     { label: 'Ajustes', className: 'settings-opt' },
   ];
 
@@ -61,6 +77,7 @@ export function SlotMenu({ slots, onPlay, onNew, onImport, onDelete, onSettings,
       setChosen(slots[i]);
     } else if (i === slots.length) onNew();
     else if (i === slots.length + 1) importFile();
+    else if (i === slots.length + 2) setMicOpen(true);
     else onSettings();
   };
 
@@ -74,7 +91,7 @@ export function SlotMenu({ slots, onPlay, onNew, onImport, onDelete, onSettings,
           onSelect={select}
           onBack={onBack}
           layer={LAYER.screen}
-          active={active && !chosen && !confirmDelete && !message}
+          active={active && !chosen && !confirmDelete && !message && !micOpen}
           className="slot-list"
           render={(o, i, sel) => {
             const s = slots[i];
@@ -135,6 +152,14 @@ export function SlotMenu({ slots, onPlay, onNew, onImport, onDelete, onSettings,
             <Menu options={[{ label: 'Vale' }]} layer={LAYER.dialog + 5} onSelect={() => setMessage(null)} onBack={() => setMessage(null)} />
           </div>
         </div>
+      )}
+      {micOpen && (
+        <SpeechCheck
+          onClose={() => {
+            setMicOpen(false);
+            recheck();
+          }}
+        />
       )}
       {confirmDelete && (
         <ConfirmDialog

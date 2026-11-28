@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { TYPE_ORDER, strongAgainst } from '../game/elements';
 import { useInput } from '../system/input';
+import { CLOSE_WORDS, SAY, useVoice } from '../system/voice';
 import { sfx } from '../system/audio';
 import { LAYER, KeyHint, Bb, DirKeys, TypeBadge } from './ui';
 
@@ -22,14 +23,19 @@ export function TypeChart({ onClose }: { onClose: () => void }) {
     setIdx(i);
   };
 
+  const close = () => {
+    sfx('back');
+    onClose();
+  };
+
   useInput((e) => {
     if (e.btn === 'up') select(idx - 1);
     else if (e.btn === 'down') select(idx + 1);
-    else if (e.btn === 'b' || e.btn === 'a' || e.btn === 'types') {
-      sfx('back');
-      onClose();
-    }
+    else if (e.btn === 'b' || e.btn === 'a' || e.btn === 'types') close();
   }, LAYER.dex);
+
+  // playing by voice: «cerrar», «cancelar», «volver» (or «tipos» again)
+  useVoice({ cmds: [{ words: CLOSE_WORDS, run: close }, { words: SAY.tipos, run: close }] }, LAYER.dex);
 
   return (
     <div className="typechart">

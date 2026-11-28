@@ -1,49 +1,30 @@
-// Listening to a child reading an Vozimón's name (browser speech recognition, Web Speech API).
-// Chrome / Edge: on the device when its Spanish pack is installed, otherwise Google's / Microsoft's
-// servers. Safari: Apple's service. Firefox has none: then only a grown-up can confirm.
-// Only used when a grown-up switched "Leer en voz alta" on in Ajustes.
+// Listening to a child reading an Vozimón's name (browser speech recognition, Web Speech API; the
+// shared plumbing is in recognizer.ts). Where nothing can listen (Firefox), a grown-up confirms.
+// Also the setup check for grown-ups (is everything ready for listening?) and its microphone test.
 
 import { heardName } from '../game/reading';
 import { getSpecies } from '../game/creatures';
 import { setListening } from './audio';
+import { meterMic, micNoticed } from './micLevel';
+import {
+  LANGS,
+  claimMic,
+  findLocalLang,
+  getLocalLang,
+  lastListenError,
+  noteFailed,
+  noteWorked,
+  recognizer,
+  setLocalLang,
+  type PhraseCtor,
+  type Rec,
+} from './recognizer';
+
+export { canListen } from './recognizer';
 
 /** 'ok' read right · 'wrong' heard something else · 'silence' heard nothing · 'denied' no microphone permission · 'unavailable' can't listen. */
 export type ListenResult = 'ok' | 'wrong' | 'silence' | 'denied' | 'unavailable';
 
-interface Alternative {
-  transcript: string;
-}
-interface RecEvent {
-  results: ArrayLike<ArrayLike<Alternative>>;
-}
-interface Rec {
-  lang: string;
-  interimResults: boolean;
-  maxAlternatives: number;
-  continuous: boolean;
-  processLocally?: boolean;
-  phrases?: unknown;
-  onresult: ((e: RecEvent) => void) | null;
-  onerror: ((e: { error: string }) => void) | null;
-  onend: (() => void) | null;
-  onaudiostart: (() => void) | null;
-  start(): void;
-  stop(): void;
-  abort(): void;
-}
-interface LangQuery {
-  langs: string[];
-  processLocally: boolean;
-}
-interface RecCtor {
-  new (): Rec;
-  available?(o: LangQuery): Promise<string>;
-  install?(o: LangQuery): Promise<boolean>;
-}
-type PhraseCtor = new (phrase: string, boost?: number) => unknown;
-
-/** Chilean Spanish first; other Spanish variants where that one isn't offered. */
-const LANGS = ['es-CL', 'es-US', 'es-ES'];
 const LISTEN_MS = 9000; // at most this long: a child may need a moment to start
 const PAUSE_MS = 2200; // ...and stops listening this long after the child stopped talking
 
@@ -51,40 +32,12 @@ const PAUSE_MS = 2200; // ...and stops listening this long after the child stopp
 let lastHeard: string[] = [];
 export const heardLastTime = () => lastHeard;
 
-const recognizer = (): RecCtor | null => {
-  if (typeof window === 'undefined') return null;
-  const w = window as unknown as { SpeechRecognition?: RecCtor; webkitSpeechRecognition?: RecCtor };
-  return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
-};
-
-/** Can this browser listen at all? (If not, a grown-up confirms the reading instead.) */
-export const canListen = () => !!recognizer();
-
-/** The Spanish language that works on this device without any server, once known. */
-let localLang: string | null = null;
-
-async function findLocalLang(): Promise<void> {
-  const R = recognizer();
-  if (!R?.available) return;
-  for (const lang of LANGS) {
-    try {
-      if ((await R.available({ langs: [lang], processLocally: true })) === 'available') {
-        localLang = lang;
-        return;
-      }
-    } catch {
-      return;
-    }
-  }
-}
-void findLocalLang();
-
 let packTried = false;
 
 /** Where Chrome offers it, download its Spanish pack so voices can stay on the device (once per visit, unless `again`). */
 async function installPack(again = false): Promise<void> {
   const R = recognizer();
-  if ((packTried && !again) || localLang || !R?.available || !R.install) return;
+  if ((packTried && !again) || getLocalLang() || !R?.available || !R.install) return;
   packTried = true;
   try {
     for (const lang of LANGS) {
@@ -102,7 +55,7 @@ async function installPack(again = false): Promise<void> {
 }
 
 /**
- * Called when a grown-up switches reading aloud on in Ajustes (a tap, so the browser allows it):
+ * Called when a grown-up switches reading aloud or playing by voice on in Ajustes (a tap, so the browser allows it):
  * asks for the microphone now, while the grown-up is there, and fetches the on-device pack.
  */
 export async function prepareListening(): Promise<void> {
@@ -135,6 +88,8 @@ export function listenFor(id: number, misses: number, onHearing?: () => void): {
   let pause = 0;
   const heard = () => [...heardSet];
   const verdict = (): ListenResult => (heardName(heard(), id, misses) ? 'ok' : heardSet.size ? 'wrong' : 'silence');
+  const release = claimMic(); // playing by voice waits while the child reads
+  const stopMeter = meterMic(); // the rings around the microphone show how loud it hears the child
 
   const finish = (r: ListenResult) => {
     if (finished) return;
@@ -151,6 +106,8 @@ export function listenFor(id: number, misses: number, onHearing?: () => void): {
       // already stopped
     }
     setListening(false);
+    stopMeter();
+    release();
     resolve(r);
   };
 
@@ -170,9 +127,13 @@ export function listenFor(id: number, misses: number, onHearing?: () => void): {
       // older browsers: plain recognition
     }
     r.onaudiostart = () => rec === r && onHearing?.();
+    r.onsoundstart = () => rec === r && micNoticed('sound');
+    r.onspeechstart = () => rec === r && micNoticed('speech');
+    r.onspeechend = () => rec === r && micNoticed('quiet');
     r.onresult = (e) => {
       if (rec !== r) return;
       noteWorked();
+      micNoticed('words');
       const best: string[] = [];
       for (let i = 0; i < e.results.length; i++) {
         const res = e.results[i];
@@ -244,7 +205,8 @@ export function listenFor(id: number, misses: number, onHearing?: () => void): {
 
   setListening(true);
   void installPack(); // reading aloud is on by default: the first reading starts the download
-  attempt(localLang ?? LANGS[0], !!localLang, true);
+  const local = getLocalLang();
+  attempt(local ?? LANGS[0], !!local, true);
   timer = window.setTimeout(stopListening, LISTEN_MS);
 
   return { result, stop: () => finish('silence') };
@@ -253,31 +215,6 @@ export function listenFor(id: number, misses: number, onHearing?: () => void): {
 // ------------------------------------------------------------------ setup check
 // So a grown-up finds out before playing (not when a child is waiting to read a name) whether
 // listening will work here: shown on the title screen and in Ajustes → Micrófono.
-
-const FAIL_KEY = 'vozimon.voz.v1';
-
-/** The last time listening failed on this device (kept until it works again), e.g. 'network'. */
-export function lastListenError(): string | null {
-  try {
-    return localStorage.getItem(FAIL_KEY);
-  } catch {
-    return null;
-  }
-}
-function noteFailed(err: string) {
-  try {
-    localStorage.setItem(FAIL_KEY, err);
-  } catch {
-    // no storage: the check just won't remember it
-  }
-}
-function noteWorked() {
-  try {
-    localStorage.removeItem(FAIL_KEY);
-  } catch {
-    // no storage
-  }
-}
 
 /** granted · prompt (not asked yet) · denied (blocked) · none (no microphone) · unknown (the browser doesn't say). */
 export type MicState = 'granted' | 'prompt' | 'denied' | 'none' | 'unknown';
@@ -340,7 +277,7 @@ async function packState(): Promise<PackState> {
     try {
       const a = await R.available({ langs: [lang], processLocally: true });
       if (a === 'available') {
-        localLang ??= lang;
+        setLocalLang(lang);
         return 'local';
       }
       if (a === 'downloading') best = 'downloading';
@@ -398,6 +335,8 @@ export function probeListening(): {
   let heard = '';
   let r: Rec | null = null;
   let timer = 0;
+  const release = claimMic(); // playing by voice waits during the test
+  const stopMeter = meterMic(); // ...and the level bar shows how loud it hears
   const finish = (error: string | null) => {
     if (done) return;
     done = true;
@@ -408,13 +347,15 @@ export function probeListening(): {
       // already stopped
     }
     setListening(false);
+    stopMeter();
+    release();
     console.info(`[Vozimón] Prueba del micrófono: ${error ?? 'ok'} · oído: «${heard}»`);
     resolve({ heard, error });
   };
   const start = (local: boolean) => {
     const rec = new R();
     r = rec;
-    rec.lang = local && localLang ? localLang : LANGS[0];
+    rec.lang = (local && getLocalLang()) || LANGS[0];
     rec.interimResults = true;
     rec.maxAlternatives = 1;
     rec.continuous = false;
@@ -423,9 +364,13 @@ export function probeListening(): {
     } catch {
       // older browsers
     }
+    rec.onsoundstart = () => r === rec && micNoticed('sound');
+    rec.onspeechstart = () => r === rec && micNoticed('speech');
+    rec.onspeechend = () => r === rec && micNoticed('quiet');
     rec.onresult = (e) => {
       if (r !== rec) return;
       noteWorked();
+      micNoticed('words');
       const parts: string[] = [];
       for (let i = 0; i < e.results.length; i++) if (e.results[i][0]?.transcript) parts.push(e.results[i][0].transcript.trim());
       heard = parts.join(' ');
@@ -456,7 +401,7 @@ export function probeListening(): {
     }
   };
   setListening(true);
-  start(!!localLang);
+  start(!!getLocalLang());
   timer = window.setTimeout(() => finish(heard ? null : 'no-speech'), 8000);
   return { result, stop: () => finish('aborted') };
 }

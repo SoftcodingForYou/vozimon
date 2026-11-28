@@ -80,9 +80,10 @@ browser, on desktop, tablet and phone.
 | **T** | tabla de tipos (¿quién gana a quién?) |
 | **M** | mapa |
 
-- Cada acción tiene una sola tecla, y todas se pueden cambiar en *Ajustes → Teclas*; las pistas en pantalla muestran siempre la tecla elegida. Al escribir el nombre, *Intro* confirma y *Esc* vuelve.
+- Cada acción tiene una sola tecla, y todas se pueden cambiar en *Ajustes → Avanzado → Teclas*; las pistas en pantalla muestran siempre la tecla elegida. Al escribir el nombre, *Intro* confirma y *Esc* vuelve.
 - En tablets y teléfonos aparecen flechas y botones ✓ (aceptar) / ✗ (volver) en pantalla; «Menú», «Vozidex», «Tipos» y «Mapa» se tocan en la esquina. También funcionan los mandos (gamepads).
-- Para aprender a leer: *Ajustes → Letra* elige entre la letra «Fina» (clara, pensada para quien empieza a leer) y la letra «Píxel», y *Ajustes → Mayúsculas* lo escribe todo en mayúsculas.
+- *Ajustes* muestra lo más usado (micrófono, leer en voz alta, jugar con la voz, música y sonidos); lo demás está en *Ajustes → Avanzado*.
+- Para aprender a leer: *Ajustes → Avanzado → Letra* elige entre la letra «Fina» (clara, pensada para quien empieza a leer) y la letra «Píxel», y *Avanzado → Mayúsculas* lo escribe todo en mayúsculas.
 
 ### 🎤 Leer en voz alta
 
@@ -92,9 +93,30 @@ Vozidex). También se pueden practicar los Vozimón que solo se han visto. Si lo
 estrella; si no, el nombre aparece en sílabas de colores para intentarlo otra vez (con la ✕ de la
 esquina se deja para otro momento; después de atraparlo aparece tras 3 intentos).
 
+Mientras escucha, el micrófono se llena y le salen ondas según lo fuerte que oye la voz: así se ve
+enseguida si hay que hablar más alto. En Chrome y Edge de ordenador mide el volumen de verdad; en
+Safari, tablets y teléfonos muestra por pasos si oye algo, una voz o palabras.
+
 Funciona en Chrome, Edge y Safari; donde no se puede escuchar (Firefox, sin permiso para el
 micrófono) un adulto confirma con «Lo leyó bien». El navegador puede enviar la voz a Google o Apple
 para entenderla; se puede apagar en *Ajustes → Leer en voz alta*.
+
+Antes de jugar, el juego comprueba si puede escuchar: si falta algo (permiso para el micrófono, la
+voz en español del navegador…), la lista de partidas lo pide en rojo («¡Configura el micrófono!») y
+*Micrófono* abre la comprobación, con «Dar permiso», «Descargar voz» y «Probar».
+
+### 🗣️ Jugar con la voz
+
+Con *Ajustes → Jugar con la voz* (apagado al empezar; lo enciende un adulto) se juega hablando:
+
+- En el mundo: «mapa», «Vozidex» y «tipos» los abren; «cerrar», «cancelar» o «volver» los cierran.
+- En los combates las opciones salen grandes abajo: «atacar», «cambiar» o «huir». Para elegir quién
+  lucha, basta con decir su nombre.
+- En el Vozidex, decir el nombre de un Vozimón ya visto abre su página; «leer» empieza a leerlo.
+
+Los mensajes siguen avanzando con un toque o una tecla. Lo que el juego entendió aparece un momento en
+un bocadillo naranja. Mientras está encendido, el micrófono escucha todo el rato durante la partida
+(sin la voz en español instalada, el navegador la envía a Google o Apple).
 
 ### Modos
 

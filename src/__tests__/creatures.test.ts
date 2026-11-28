@@ -15,6 +15,9 @@ describe('Vozimon roster', () => {
     for (const s of SPECIES) {
       expect(s.name.trim().length).toBeGreaterThan(2);
       expect(s.attack.trim().length).toBeGreaterThan(2);
+      // shown with every word capitalised ("Bola De Fuego"), same letters otherwise
+      expect(s.attackName.toLowerCase()).toBe(s.attack.toLowerCase());
+      for (const w of s.attackName.split(' ')) expect(w.charAt(0), s.attackName).toBe(w.charAt(0).toUpperCase());
       expect(s.desc.trim().length).toBeGreaterThan(10);
       expect(s.habitats.length).toBeGreaterThan(0);
       expect(s.types.length).toBeGreaterThan(0);

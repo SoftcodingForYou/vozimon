@@ -11,13 +11,13 @@ import logoURL from '../../brand/svg/vozimon-logo.svg';
 let checkShown = false;
 
 /**
- * `reading`: reading aloud is on (the point of the game), so if listening isn't ready here a grown-up
- * is told: a warning in the corner, and the check pops up once per visit when starting.
+ * `needsMic`: reading aloud (the point of the game) or playing by voice is on, so if listening isn't
+ * ready here a grown-up is told: a warning in the corner, and the check pops up once per visit when starting.
  */
-export function TitleScreen({ onStart, reading = false }: { onStart: () => void; reading?: boolean }) {
-  const [check] = useListenCheck(reading);
+export function TitleScreen({ onStart, needsMic = false }: { onStart: () => void; needsMic?: boolean }) {
+  const [check] = useListenCheck(needsMic);
   const [micOpen, setMicOpen] = useState<false | 'tap' | 'start'>(false);
-  const status = reading && check ? listenStatus(check) : 'ok';
+  const status = needsMic && check ? listenStatus(check) : 'ok';
   useEffect(() => {
     playMusic('title');
   }, []);

@@ -4,7 +4,7 @@ import { syllables } from '../game/reading';
 import { canListen, heardLastTime, listenFor } from '../system/listen';
 import { useInput } from '../system/input';
 import { sfx } from '../system/audio';
-import { Menu, LAYER, FitText, MicIcon, MicOffIcon, StarIcon, CheckMark, CrossMark } from './ui';
+import { Menu, LAYER, FitText, MicIcon, MicOffIcon, StarIcon, CheckMark, CrossMark, useMicLevel } from './ui';
 
 const LAYER_READ = LAYER.dialog + 2;
 /** On the new page after a catch, the ✕ in the corner shows after this many tries that weren't understood. */
@@ -45,6 +45,8 @@ export function ReadAloud({ id, onRead, onSkip, onClose, closeAfter = 0 }: Props
     onSkip();
   };
   const [hearing, setHearing] = useState(false);
+  const micRef = useRef<HTMLDivElement>(null);
+  useMicLevel(micRef); // rings around the microphone grow with how loud it hears the child
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
 
@@ -108,7 +110,7 @@ export function ReadAloud({ id, onRead, onSkip, onClose, closeAfter = 0 }: Props
         {phase === 'listen' && (
           <>
             <FitText className="read-name">{name}</FitText>
-            <div className={'read-mic' + (hearing ? ' on' : '')}>
+            <div ref={micRef} className={'read-mic' + (hearing ? ' on' : '')}>
               <MicIcon size={96} />
             </div>
           </>

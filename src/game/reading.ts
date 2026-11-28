@@ -1,4 +1,5 @@
 // Reading names out loud: does what the speech recogniser heard sound like the creature's name?
+// Playing by voice: which word («mapa», «atacar»...) or which Vozimón was called?
 // And the name split into syllables (Chis·pín), to help when it didn't work yet.
 
 import { SPECIES } from './creatures';
@@ -113,6 +114,34 @@ function pieces(transcript: string): string[] {
   return [...out];
 }
 
+/** The sound keys of every piece of the recogniser's guesses. */
+const pieceKeys = (heard: string[]) => [...new Set(heard.flatMap(pieces).map(soundKey))].filter(Boolean);
+
+/** The best score of a piece that counts as this name (0: none does). See heardName. */
+function scoreName(ks: string[], target: { id: number; key: string }, need: number): number {
+  const all = keys();
+  let best = 0;
+  for (const k of ks) {
+    if (k.length < target.key.length * MIN_LENGTH) continue;
+    const start = k.length > target.key.length ? k.slice(0, target.key.length) : k;
+    const s = Math.max(likeness(k, target.key), START_ONLY * likeness(start, target.key));
+    if (s < need || s <= best) continue;
+    const wasOther = (o: { key: string }) => {
+      const l = Math.max(likeness(k, o.key), START_ONLY * likeness(start, o.key));
+      return l > s && (l >= SAME_NAME || (l >= OTHER_NAME && l - s >= MARGIN));
+    };
+    if (!all.some((o) => o.id !== target.id && wasOther(o))) best = s;
+  }
+  return best;
+}
+
+/** How surely what was heard is this creature's name (0 = it isn't; see heardName). */
+export function nameScore(heard: string[], id: number, misses = 0): number {
+  const target = keys().find((k) => k.id === id);
+  if (!target) return 0;
+  return scoreName(pieceKeys(heard), target, Math.max(READ_MATCH_MIN, READ_MATCH - misses * EASIER_PER_MISS));
+}
+
 /**
  * Did the child read this creature's name? `heard` are the recogniser's guesses, `misses` the tries
  * that weren't understood so far (each one lowers the bar a little). A guess counts when it sounds
@@ -121,26 +150,46 @@ function pieces(transcript: string): string[] {
  * looking at this name). Recognisers like to finish invented names as real words ("Trinín" →
  * "Trinidad"), so a longer word is also compared by its start.
  */
-export function heardName(heard: string[], id: number, misses = 0): boolean {
+export const heardName = (heard: string[], id: number, misses = 0): boolean => nameScore(heard, id, misses) > 0;
+
+/**
+ * Which of these Vozimón was called by its name (playing by voice: a fighter from the list, a page
+ * of the Vozidex)? The best match, or null. Never one whose name only sounds like another
+ * Vozimón's name that was really said (calling Trinero doesn't pick Trinín).
+ */
+export function bestName(heard: string[], ids: number[]): number | null {
+  const ks = pieceKeys(heard);
+  if (!ks.length) return null;
   const all = keys();
-  const target = all.find((k) => k.id === id);
-  if (!target) return false;
-  const need = Math.max(READ_MATCH_MIN, READ_MATCH - misses * EASIER_PER_MISS);
-  for (const t of heard) {
-    for (const p of pieces(t)) {
-      const k = soundKey(p);
-      if (k.length < target.key.length * MIN_LENGTH) continue;
-      const start = k.length > target.key.length ? k.slice(0, target.key.length) : k;
-      const s = Math.max(likeness(k, target.key), START_ONLY * likeness(start, target.key));
-      if (s < need) continue;
-      const wasOther = (o: { key: string }) => {
-        const l = Math.max(likeness(k, o.key), START_ONLY * likeness(start, o.key));
-        return l > s && (l >= SAME_NAME || (l >= OTHER_NAME && l - s >= MARGIN));
-      };
-      if (!all.some((o) => o.id !== id && wasOther(o))) return true;
+  let bestId: number | null = null;
+  let best = 0;
+  for (const id of ids) {
+    const target = all[id - 1]?.id === id ? all[id - 1] : all.find((k) => k.id === id);
+    if (!target) continue;
+    const s = scoreName(ks, target, READ_MATCH);
+    if (s > best) {
+      best = s;
+      bestId = id;
     }
   }
-  return false;
+  return bestId;
+}
+
+/**
+ * How much a spoken command must sound like its word (0..1). Stricter than names: these are short
+ * real words, and «mamá» must not open the «mapa».
+ */
+export const WORD_MATCH = 0.8;
+
+/** How alike what was heard is to the closest of these words (1 = sounds the same). */
+export function wordScore(heard: string[], words: string[]): number {
+  const ks = pieceKeys(heard);
+  let best = 0;
+  for (const w of words) {
+    const wk = soundKey(w);
+    for (const k of ks) best = Math.max(best, likeness(k, wk));
+  }
+  return best;
 }
 
 // ---- syllables ----

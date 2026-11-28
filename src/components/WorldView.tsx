@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { clearTaps, frameDir, isHeld, useInput } from '../system/input';
+import { SAY, useVoice } from '../system/voice';
 import { sfx } from '../system/audio';
 import { updateWorld, type Encounter, type WorldState } from '../world/world';
 import { renderWorld, VIEW_H, VIEW_W } from '../world/renderer';
@@ -67,6 +68,23 @@ export function WorldView({ world, avatar, paused, onEncounter, onSign, onMenu, 
         sfx('ok');
         cb.current.onMap();
       }
+    },
+    LAYER.world,
+    !paused,
+  );
+
+  // playing by voice: «mapa», «vozidex» and «tipos» open them, like their keys
+  const open = (fn: () => void) => () => {
+    sfx('ok');
+    fn();
+  };
+  useVoice(
+    {
+      cmds: [
+        { words: SAY.mapa, run: open(() => cb.current.onMap()) },
+        { words: SAY.vozidex, run: open(() => cb.current.onDex()) },
+        { words: SAY.tipos, run: open(() => cb.current.onTypes()) },
+      ],
     },
     LAYER.world,
     !paused,

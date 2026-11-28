@@ -154,15 +154,19 @@ describe('save slots', () => {
   });
 
   it('stores settings, including the chosen keys', () => {
-    expect(loadSettings()).toEqual({ sound: true, music: true, font: 'fine', upper: false, reading: true, keys: DEFAULT_KEYS });
+    expect(loadSettings()).toEqual({ sound: true, music: true, font: 'fine', upper: false, reading: true, voice: false, keys: DEFAULT_KEYS });
     const keys = rebind(DEFAULT_KEYS, 'a', 'k');
-    saveSettings({ sound: false, music: true, font: 'pixel', upper: true, reading: false, keys });
-    expect(loadSettings()).toEqual({ sound: false, music: true, font: 'pixel', upper: true, reading: false, keys });
+    saveSettings({ sound: false, music: true, font: 'pixel', upper: true, reading: false, voice: true, keys });
+    expect(loadSettings()).toEqual({ sound: false, music: true, font: 'pixel', upper: true, reading: false, voice: true, keys });
     // reading aloud is on by default, also for settings stored before it existed
     store.setItem('vozimon.ajustes.v1', JSON.stringify({ sound: false }));
     expect(loadSettings().reading).toBe(true);
     store.setItem('vozimon.ajustes.v1', JSON.stringify({ reading: 'yes' }));
     expect(loadSettings().reading).toBe(true);
+    // playing by voice stays off until a grown-up switches it on (also for older or broken settings)
+    expect(loadSettings().voice).toBe(false);
+    store.setItem('vozimon.ajustes.v1', JSON.stringify({ voice: 'yes' }));
+    expect(loadSettings().voice).toBe(false);
     // broken key data falls back to the defaults
     store.setItem('vozimon.ajustes.v1', JSON.stringify({ keys: { a: 'q', b: 'q' } }));
     expect(loadSettings().keys).toEqual(DEFAULT_KEYS);

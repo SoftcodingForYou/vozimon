@@ -7,7 +7,8 @@ import { portraitURL } from '../art/assets';
 import { useInput } from '../system/input';
 import { sfx } from '../system/audio';
 import { canListen } from '../system/listen';
-import { LAYER, BallIcon, EyeIcon, KeyHint, A, Bb, TypeBadge, DirKeys, FitText, CupIcon, ScrollBar, MicIcon, StarIcon } from './ui';
+import { SAY, useVoice, useVoiceState } from '../system/voice';
+import { LAYER, BallIcon, EyeIcon, KeyHint, A, Bb, TypeBadge, DirKeys, FitText, CupIcon, ScrollBar, MicIcon, StarIcon, VoiceMic } from './ui';
 import { ReadAloud, TRIES_BEFORE_SKIP } from './ReadAloud';
 
 const COLS = 6;
@@ -155,6 +156,43 @@ export function Dex({ slot, onClose, only, reading = false, onRead }: Props) {
     }
   }, only ? LAYER.picker : LAYER.dex);
 
+  // Playing by voice: a Vozimón's name opens its page; «cerrar», «cancelar» or «vozidex» close the
+  // Vozidex, «volver» goes back from a page to the grid (like B), «leer» starts reading the name.
+  const voiceOn = useVoiceState() !== 'off';
+  const closeDex = () => {
+    sfx('back');
+    onClose();
+  };
+  useVoice(
+    {
+      cmds: [
+        { words: SAY.cerrar, run: closeDex },
+        { words: SAY.vozidex, run: closeDex },
+        {
+          words: SAY.volver,
+          run: detail
+            ? () => {
+                sfx('back');
+                setDetail(false);
+              }
+            : closeDex,
+        },
+        ...(detail && canRead(cur) ? [{ words: SAY.leer, run: () => startReading(cur) }] : []),
+      ],
+      names: {
+        ids: slot.seen,
+        run: (id) => {
+          sfx('ok');
+          setIdx(id - 1);
+          setDetail(true);
+          setBtnPick(null);
+        },
+      },
+    },
+    LAYER.dex,
+    !only && readingId === null,
+  );
+
   const open = (i: number) => {
     const s = SPECIES[i];
     if (!seen.has(s.id)) {
@@ -182,6 +220,7 @@ export function Dex({ slot, onClose, only, reading = false, onRead }: Props) {
             <StarIcon size={26} /> {read.size}
           </span>
         )}
+        {voiceOn && !only && <VoiceMic size={30} />}
       </div>
       {!detail && (
         <div className="dex-grid" ref={gridRef}>
@@ -236,7 +275,7 @@ export function Dex({ slot, onClose, only, reading = false, onRead }: Props) {
               ))}
             </p>
             <p>
-              <b>Ataque:</b> {s.attack}
+              <b>Ataque:</b> {s.attackName}
             </p>
             <p>
               <b>Vive en:</b> {whereItLives(s, slot.map)}

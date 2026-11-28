@@ -18,13 +18,14 @@ import { playMusic } from '../system/audio';
 import { useBindings, useInputSource } from '../system/input';
 import { SECRET_CODE, keyLabel, typedTail } from '../system/keys';
 import { sfx } from '../system/audio';
+import { simulateHeard, useVoiceSession } from '../system/voice';
 import { WorldView } from './WorldView';
 import { Battle } from './Battle';
 import { Dex } from './Dex';
 import { SettingsPanel } from './SettingsPanel';
 import { TypeChart } from './TypeChart';
 import { WorldMapView } from './WorldMapView';
-import { Menu, TextBox, LAYER, BallIcon, EyeIcon, Qq, Ee, Tt, Mm, TypeBadge } from './ui';
+import { Menu, TextBox, LAYER, BallIcon, EyeIcon, Qq, Ee, Tt, Mm, TypeBadge, VoiceBadge, VoiceHeard } from './ui';
 
 type Overlay =
   | { k: 'welcome' }
@@ -80,6 +81,7 @@ export function Play({ slot, updateSlot, settings, onSettings, onExit, persist, 
   const lastZone = useRef(-1);
   const keys = useBindings();
   const source = useInputSource();
+  useVoiceSession(); // while playing, "Jugar con la voz" listens (if a grown-up switched it on)
 
   // Saving: a brand-new world right away, then every 5th step (see WorldView),
   // after every battle, and whenever the game is left, hidden or closed.
@@ -123,9 +125,10 @@ export function Play({ slot, updateSlot, settings, onSettings, onExit, persist, 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [overlay, world]);
 
-  // Test hook: ?debug exposes the world state in the browser console.
+  // Test hook: ?debug exposes the world state in the browser console, and __vozi.say('mapa')
+  // acts as if that had been heard (playing by voice, without a microphone).
   useEffect(() => {
-    if (new URLSearchParams(location.search).has('debug')) (window as unknown as { __vozi: unknown }).__vozi = { world };
+    if (new URLSearchParams(location.search).has('debug')) (window as unknown as { __vozi: unknown }).__vozi = { world, say: simulateHeard };
   }, [world]);
 
   useEffect(() => {
@@ -209,6 +212,7 @@ export function Play({ slot, updateSlot, settings, onSettings, onExit, persist, 
           <BallIcon size={26} /> {slot.caught.length}/{TOTAL}
           <EyeIcon size={26} /> {slot.seen.length}
         </span>
+        {settings.voice && <VoiceBadge />}
         <div className="hud-keys">
           <span className="hud-box hud-key" onClick={() => openIfFree({ k: 'menu' })}>
             <Qq /> Menú
@@ -309,9 +313,11 @@ export function Play({ slot, updateSlot, settings, onSettings, onExit, persist, 
           onWin={recordWin}
           reading={settings.reading}
           onRead={markRead}
+          voice={settings.voice}
           onEnd={(o) => endBattle(overlay.enc, o)}
         />
       )}
+      {settings.voice && <VoiceHeard className={overlay?.k === 'battle' ? 'in-battle' : undefined} />}
     </div>
   );
 }

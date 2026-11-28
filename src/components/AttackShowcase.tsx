@@ -116,7 +116,7 @@ export function AttackShowcase({ capture, start = 1 }: { capture: boolean; start
       <div className="bbottom">
         <div className="textbox sc-text">
           <p>
-            ¡{s.name} usa <b>{s.attack}</b>!
+            ¡{s.name} usa <b>{s.attackName}</b>!
           </p>
           <span className="sc-types">
             {s.types.map((t) => (

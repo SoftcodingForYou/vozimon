@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { getSpecies, MYTHICAL_ID, TOTAL, type Species } from '../game/creatures';
 import { attackDamage, easyCatchChance, easyFleeChance, playerMaxHp, rollCatch, wildMaxHp } from '../game/battle';
 import { byUse, type SaveSlot } from '../game/save';
@@ -7,7 +7,9 @@ import { BIOME_BG } from '../world/tiles';
 import { avatarBackURL, ballURL, portraitBounds, portraitURL } from '../art/assets';
 import { attackSfx, playMusic, sfx } from '../system/audio';
 import { attackRecipe } from '../game/attacks';
-import { Menu, TextBox, LAYER, TypeBadge, HpBar, BallIcon, type Opt } from './ui';
+import { ELEMS, type Elem } from '../game/elements';
+import { SAY } from '../system/voice';
+import { Menu, TextBox, LAYER, TypeBadge, TypeIcon, HpBar, BallIcon, FitText, Sparkle, VoiceMic, type Opt } from './ui';
 import { CreaturePicker } from './CreaturePicker';
 import { Dex } from './Dex';
 import { AttackFx, KoStars, fxHitDelay } from './AttackFx';
@@ -15,6 +17,7 @@ import { AttackFx, KoStars, fxHitDelay } from './AttackFx';
 type UI =
   | { k: 'none'; n: number }
   | { k: 'text'; n: number; text: string; auto?: number; ball?: boolean; done: () => void }
+  | { k: 'caption'; n: number; text: string } // the attack's name, up for its whole animation
   | { k: 'menu'; n: number; prompt: string; options: Opt[]; done: (i: number) => void }
   | { k: 'pick'; n: number; title: string; allowCancel: boolean; exclude: number[]; current: number | null; done: (id: number | null) => void }
   | { k: 'dex'; n: number; done: () => void };
@@ -32,11 +35,26 @@ interface Props {
   onEnd: (o: Outcome) => void;
   reading?: boolean; // names can be read out loud on the new Vozidex page
   onRead?: (id: number) => void;
+  voice?: boolean; // playing by voice: the choices pop up big, and a fighter is called by its name
 }
 
 const pickOne = <T,>(xs: T[]) => xs[Math.floor(Math.random() * xs.length)];
+/** The attack's name is shown this long before the attack starts (it stays until the animation ends). */
+const CAPTION_LEAD = 700;
 
-export function Battle({ enc, slot, onSeen, onCaught, onFight, onWin, onEnd, reading = false, onRead }: Props) {
+/** Icons of the big buttons when playing by voice. */
+const BIG_ICON: Record<'fight' | 'swap' | 'run', ReactNode> = {
+  fight: <Sparkle color="var(--pink)" size={46} />,
+  swap: <span className="bvoice-glyph">⇄</span>,
+  run: <span className="bvoice-glyph">⇦</span>,
+};
+const attackIcon = (t: Elem) => (
+  <span className="bvoice-type" style={{ background: ELEMS[t].color, color: ELEMS[t].text }}>
+    <TypeIcon type={t} size={34} />
+  </span>
+);
+
+export function Battle({ enc, slot, onSeen, onCaught, onFight, onWin, onEnd, reading = false, onRead, voice = false }: Props) {
   const wild = getSpecies(enc.sp);
   const init = useRef({
     easy: slot.mode === 'easy' || slot.caught.length === 0,
@@ -184,7 +202,10 @@ export function Battle({ enc, slot, onSeen, onCaught, onFight, onWin, onEnd, rea
     const easyLoop = async () => {
       if (slot.mode === 'normal') await text('Todavía no tienes Vozimón para luchar. ¡Lanza la bola estrella!');
       for (;;) {
-        const c = await choose('¿Qué hacemos?', [{ label: 'Lanzar bola', icon: <BallIcon size={30} /> }, { label: 'Huir' }]);
+        const c = await choose('¿Qué hacemos?', [
+          { label: 'Lanzar bola', icon: <BallIcon size={voice ? 46 : 30} />, say: SAY.lanzar },
+          { label: 'Huir', icon: voice ? BIG_ICON.run : undefined, say: SAY.huir },
+        ]);
         if (c === 1) return runAway();
         const res = rollCatch(easyCatchChance(wild.id), Math.random);
         await throwBall(res);
@@ -229,7 +250,9 @@ export function Battle({ enc, slot, onSeen, onCaught, onFight, onWin, onEnd, rea
         const att = fromMine ? cur : wild;
         const def = fromMine ? wild : cur;
         const type = att.types[0];
-        await auto(`¡${att.name} usa ${att.attack}!`);
+        // the attack's name stays up until its animation is over
+        setUi({ k: 'caption', n: next(), text: `¡${att.name} usa ${att.attackName}!` });
+        await wait(CAPTION_LEAD);
         const hit = attackDamage(att, def, fromMine, Math.random);
         if (fromMine) animMine('lunge');
         else animWild('lunge');
@@ -260,6 +283,7 @@ export function Battle({ enc, slot, onSeen, onCaught, onFight, onWin, onEnd, rea
           animWild('idle');
           if (curHp > 0) animMine('idle');
         }
+        setUi({ k: 'none', n: next() });
         if (hit.crit) await auto('¡Un golpe crítico!');
         if (hit.mult > 1) await auto('¡Es muy eficaz!');
         else if (hit.mult < 1) await auto('No es muy eficaz...');
@@ -288,17 +312,23 @@ export function Battle({ enc, slot, onSeen, onCaught, onFight, onWin, onEnd, rea
       };
 
       while (current === null) {
-        const c = await choose('¿Qué hacemos?', [{ label: '¡A luchar!' }, { label: 'Huir' }]);
+        const c = await choose('¿Qué hacemos?', [
+          { label: 'Atacar', icon: voice ? BIG_ICON.fight : undefined, say: SAY.atacar },
+          { label: 'Huir', icon: voice ? BIG_ICON.run : undefined, say: SAY.huir },
+        ]);
         if (c === 1) return runAway();
         const id = await pick('¿Quién va a luchar?', true, [], null);
         if (id !== null) await sendOut(id);
       }
 
       for (;;) {
+        // the attack's own name shows when it happens (see doAttack)
         const act = await choose(`¿Qué hace ${cur.name}?`, [
-          { label: cur.attack, after: <TypeBadge type={cur.types[0]} small /> },
-          { label: 'Cambiar' },
-          { label: 'Huir' },
+          voice
+            ? { label: 'Atacar', icon: attackIcon(cur.types[0]), say: SAY.atacar }
+            : { label: 'Atacar', after: <TypeBadge type={cur.types[0]} small />, say: SAY.atacar },
+          { label: 'Cambiar', icon: voice ? BIG_ICON.swap : undefined, say: SAY.cambiar },
+          { label: 'Huir', icon: voice ? BIG_ICON.run : undefined, say: SAY.huir },
         ]);
         if (act === 2) return runAway();
         if (act === 1) {
@@ -426,7 +456,8 @@ export function Battle({ enc, slot, onSeen, onCaught, onFight, onWin, onEnd, rea
             )}
           </TextBox>
         )}
-        {ui.k === 'menu' && (
+        {ui.k === 'caption' && <TextBox key={ui.n} text={ui.text} hold onDone={() => {}} layer={LAYER.battle} />}
+        {ui.k === 'menu' && !voice && (
           <div className="bmenu">
             <div className="textbox prompt">
               <p>{ui.prompt}</p>
@@ -439,6 +470,31 @@ export function Battle({ enc, slot, onSeen, onCaught, onFight, onWin, onEnd, rea
         {(ui.k === 'none' || ui.k === 'pick' || ui.k === 'dex') && <div className="textbox empty" />}
       </div>
 
+      {ui.k === 'menu' && voice && (
+        // playing by voice: the choices pop up big (say the word, or tap it), below the health panels
+        <div className="bvoice">
+          <p className="bvoice-prompt">
+            <VoiceMic size={36} />
+            {ui.prompt}
+          </p>
+          <Menu
+            key={ui.n}
+            voice
+            options={ui.options}
+            onSelect={ui.done}
+            layer={LAYER.battle}
+            columns={ui.options.length}
+            className="bvoice-opts"
+            render={(o, _i, sel) => (
+              <div className={'bvoice-btn' + (sel ? ' sel' : '')}>
+                {o.icon}
+                <FitText className="bvoice-label">{o.label}</FitText>
+              </div>
+            )}
+          />
+        </div>
+      )}
+
       {ui.k === 'pick' && (
         <CreaturePicker
           key={ui.n}
@@ -450,6 +506,7 @@ export function Battle({ enc, slot, onSeen, onCaught, onFight, onWin, onEnd, rea
           allowCancel={ui.allowCancel}
           record={slot.record}
           onDone={ui.done}
+          voice={voice}
         />
       )}
       {ui.k === 'dex' && (

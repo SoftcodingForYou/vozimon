@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { askMicrophone, checkListening, installVoicePack, listenStatus, probeListening, type ListenCheck, type ListenStatus } from '../system/listen';
 import { sfx } from '../system/audio';
-import { Menu, LAYER, KeyHint, A, Bb, MicIcon, MicOffIcon } from './ui';
+import { Menu, LAYER, KeyHint, A, Bb, MicIcon, MicOffIcon, useMicLevel } from './ui';
 
 /**
- * Whether reading aloud will work on this device. It is checked again when the window gets the focus
+ * Whether listening (reading aloud, playing by voice) will work on this device. It is checked again when the window gets the focus
  * back (e.g. after a grown-up allowed the microphone in the browser's settings) and when the
  * microphone permission changes.
  */
@@ -129,12 +129,14 @@ interface Props {
   pending?: Promise<unknown>; // something just asked for (microphone, voice pack): check again when it's done
 }
 
-/** For grown-ups: is everything set up for reading names out loud? What's missing, and fix it. */
+/** For grown-ups: is everything set up for listening (reading names, playing by voice)? What's missing, and fix it. */
 export function SpeechCheck({ onClose, closeLabel = 'Volver', layer = LAYER.dialog + 5, pending }: Props) {
   const [check, refresh] = useListenCheck();
   const [busy, setBusy] = useState(false);
   const [probe, setProbe] = useState<Probe>({ k: 'idle' });
   const stopProbe = useRef<() => void>(() => {});
+  const levelRef = useRef<HTMLSpanElement>(null);
+  useMicLevel(levelRef); // during the test: how loud the microphone hears
 
   useEffect(() => {
     if (pending) void pending.then(refresh);
@@ -184,7 +186,7 @@ export function SpeechCheck({ onClose, closeLabel = 'Volver', layer = LAYER.dial
         <p className="dialog-title">
           {status === 'none' ? <MicOffIcon size={30} /> : <MicIcon size={30} />} Micrófono: {status ? STATUS_TEXT[status] : '…'}
         </p>
-        <p className="speech-sub">Para adultos: así se comprueba la lectura en voz alta.</p>
+        <p className="speech-sub">Para adultos: así se comprueba que el juego puede escuchar.</p>
         <ul className="speech-rows">
           {check &&
             rows(check).map((r, i) => (
@@ -196,6 +198,9 @@ export function SpeechCheck({ onClose, closeLabel = 'Volver', layer = LAYER.dial
           {probe.k === 'listening' && (
             <li className="warn">
               <span className="speech-mark">…</span>Escuchando: di algo.
+              <span ref={levelRef} className="level-bar" title="Volumen">
+                <i />
+              </span>
             </li>
           )}
           {probe.k === 'done' && (

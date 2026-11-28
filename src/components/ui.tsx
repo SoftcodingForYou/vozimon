@@ -2,6 +2,8 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { useBindings, useInput, useInputSource, type Btn, type InputEvt } from '../system/input';
+import { retryVoice, useVoice, useVoiceHeard, useVoiceState } from '../system/voice';
+import { onMicLevel } from '../system/micLevel';
 import { keyLabel } from '../system/keys';
 import { sfx } from '../system/audio';
 import { ELEMS, type Elem } from '../game/elements';
@@ -24,6 +26,7 @@ export interface Opt {
   after?: ReactNode; // shown after the label (e.g. a type badge)
   disabled?: boolean;
   className?: string;
+  say?: readonly string[]; // playing by voice: the words that choose it (default: its label)
 }
 
 interface MenuProps {
@@ -39,11 +42,27 @@ interface MenuProps {
   closeBtn?: Btn; // another button that closes the menu like B (e.g. the menu key itself)
   oneLine?: boolean; // each option stays on one line, shrunk to fit (small boxes like in battle)
   scroll?: boolean; // a long list: show our always-visible scroll bar beside it
+  voice?: boolean; // playing by voice: saying an option's word chooses it
   render?: (o: Opt, i: number, selected: boolean) => ReactNode;
 }
 
-/** A list (or grid) of options driven by arrows + A/B, mouse and touch. */
-export function Menu({ options, onSelect, onBack, layer, active = true, initial = 0, columns = 1, className, onFocus, closeBtn, oneLine, scroll, render }: MenuProps) {
+/** A list (or grid) of options driven by arrows + A/B, mouse and touch (and the voice, with `voice`). */
+export function Menu({
+  options,
+  onSelect,
+  onBack,
+  layer,
+  active = true,
+  initial = 0,
+  columns = 1,
+  className,
+  onFocus,
+  closeBtn,
+  oneLine,
+  scroll,
+  voice = false,
+  render,
+}: MenuProps) {
   const [idx, setIdx] = useState(Math.min(initial, options.length - 1));
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -83,6 +102,27 @@ export function Menu({ options, onSelect, onBack, layer, active = true, initial 
     sfx('ok');
     onSelect(i);
   };
+
+  useVoice(
+    {
+      cmds: options.flatMap((o, i) =>
+        o.disabled
+          ? []
+          : [
+              {
+                words: o.say ?? [o.label],
+                show: o.label,
+                run: () => {
+                  setIdx(i);
+                  choose(i);
+                },
+              },
+            ],
+      ),
+    },
+    layer,
+    active && voice,
+  );
 
   useInput(
     (e: InputEvt) => {
@@ -217,12 +257,13 @@ interface TextBoxProps {
   onDone: () => void;
   layer: number;
   auto?: number; // ms to wait after typing before continuing by itself
+  hold?: boolean; // stays until the game takes it away (e.g. the attack's name during its animation)
   className?: string;
   children?: ReactNode;
 }
 
 /** Text that appears letter by letter; A (or a tap) continues. */
-export function TextBox({ text, onDone, layer, auto, className, children }: TextBoxProps) {
+export function TextBox({ text, onDone, layer, auto, hold = false, className, children }: TextBoxProps) {
   const [shown, setShown] = useState(0);
   const doneRef = useRef(false);
   const full = shown >= text.length;
@@ -253,6 +294,7 @@ export function TextBox({ text, onDone, layer, auto, className, children }: Text
   }, [full, auto, text]);
 
   const advance = () => {
+    if (hold) return;
     if (!full) setShown(text.length);
     else {
       sfx('move');
@@ -265,13 +307,14 @@ export function TextBox({ text, onDone, layer, auto, className, children }: Text
       if (e.btn === 'a' || e.btn === 'b') advance();
     },
     layer,
+    !hold,
   );
 
   return (
-    <div className={'textbox ' + (className ?? '')} onClick={advance}>
+    <div className={'textbox ' + (hold ? 'held ' : '') + (className ?? '')} onClick={advance}>
       <p>{text.slice(0, shown)}</p>
       {children}
-      {full && auto === undefined && <span className="next">▼</span>}
+      {full && auto === undefined && !hold && <span className="next">▼</span>}
     </div>
   );
 }
@@ -431,6 +474,69 @@ export function MicOffIcon({ size = 24 }: { size?: number }) {
       <path d="M2 2 L14 14" stroke="#ffffff" strokeWidth="3.4" strokeLinecap="round" />
       <path d="M2 2 L14 14" stroke="#e44a40" strokeWidth="1.8" strokeLinecap="round" />
     </svg>
+  );
+}
+
+/**
+ * How loud the microphone hears things, on an element: the CSS variable `--lvl` (0..1) and the
+ * attribute `data-speaking` (the recogniser hears a voice). Updated every frame, without re-rendering.
+ */
+export function useMicLevel(ref: React.RefObject<HTMLElement>) {
+  useEffect(
+    () =>
+      onMicLevel((lvl, speech) => {
+        const el = ref.current;
+        if (!el) return;
+        el.style.setProperty('--lvl', lvl.toFixed(3));
+        el.toggleAttribute('data-speaking', speech);
+      }),
+    [ref],
+  );
+}
+
+/**
+ * Playing by voice: the microphone that shows the game is listening (a glow behind it grows with
+ * how loud it hears), or a crossed-out one when it can't listen right now.
+ */
+export function VoiceMic({ size = 30 }: { size?: number }) {
+  const state = useVoiceState();
+  const ref = useRef<HTMLSpanElement>(null);
+  useMicLevel(ref);
+  const off = state === 'unavailable' || state === 'denied' || state === 'error';
+  return (
+    <span ref={ref} className={'voice-mic ' + state} title={off ? 'No puede escuchar' : 'Escuchando'}>
+      {off ? <MicOffIcon size={size} /> : <MicIcon size={size} />}
+    </span>
+  );
+}
+
+/** Playing by voice: the HUD badge (a tap tries to listen again after a problem). */
+export function VoiceBadge() {
+  return (
+    <span className="hud-box hud-voice" onClick={retryVoice}>
+      <VoiceMic size={26} />
+    </span>
+  );
+}
+
+/** The word (or name) the game just understood, written out in a speech bubble for a moment. */
+export function VoiceHeard({ className }: { className?: string }) {
+  const heard = useVoiceHeard();
+  const [shown, setShown] = useState<{ text: string; n: number } | null>(null);
+  const last = useRef(heard?.n ?? 0); // only words heard from now on (not one from an earlier game)
+  useEffect(() => {
+    if (!heard || heard.n <= last.current) return;
+    last.current = heard.n;
+    setShown(heard);
+    const t = setTimeout(() => setShown(null), 1600);
+    return () => clearTimeout(t);
+  }, [heard]);
+  if (!shown) return null;
+  return (
+    <div key={shown.n} className={'voice-heard' + (className ? ' ' + className : '')}>
+      <MicIcon size={30} />
+      {shown.text}
+    </div>
   );
 }
 

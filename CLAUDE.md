@@ -13,8 +13,12 @@ classic Game Boy monster-collecting games. All creatures, names, art, sounds and
   - **Normal**: free roaming in an open world with an empty Vozidex plus one starter companion
     (choice of three). Wild Vozimón are chased and met in the world. To fight, the child picks
     one of their caught creatures from a list (name + picture). Fights are turn-based, each
-    creature has one representative attack. After winning, the star ball ("bola estrella",
-    unlimited) catches it.
+    creature has one representative attack. Before a fighter is out the menu is "Atacar" / "Huir"
+    ("Atacar" then asks who fights); during the fight it just says "Atacar" (with the attack's
+    type badge), "Cambiar" and "Huir"; the attack's own name shows when it happens ("¡X usa Y!")
+    and stays up until its animation is over (a held caption, `TextBox hold`). Attack names are
+    shown with every word capitalised ("Bola De Fuego", `Species.attackName`; `attack` stays the
+    key of its animation recipe). After winning, the star ball ("bola estrella", unlimited) catches it.
   - **Fácil** (for 4-year-olds): no fights, just throw the star ball (unlimited). The catch chance
     goes down with the Vozidex number (92% → 18%); after breaking free it may run away (5% → 35%).
 - 151 creatures: #145–150 are legendaries living at fixed spots (the world map stars the ones
@@ -71,13 +75,16 @@ classic Game Boy monster-collecting games. All creatures, names, art, sounds and
   key, never the action button), E = Vozidex, T = type chart ("Tipos", who is very effective
   against whom) and M = world map. Every button answers to exactly one key (no extra fallback
   keys); the only exception is typing a name, where Intro confirms, Esc goes back and Retroceso
-  erases (letter keys write letters there). All keys can be changed in Ajustes → Teclas. On-screen hints always show
+  erases (letter keys write letters there). All keys can be changed in Ajustes → Avanzado → Teclas. On-screen hints always show
   the key the player chose (or round buttons when playing by touch: ✓ for A, ✗ for B, ☰/E/T/M; a gamepad shows A/B); the HUD
   shows Menú, Vozidex, Tipos and Mapa stacked top-right and they can be tapped. The in-game menu only
   manages the game and its settings (Ajustes, Salir, Seguir); the Vozidex has its own shortcut. Touch D-pad + ✓ (A, green) / ✗ (B, red)
   buttons on tablets/phones — no letters, they confuse young children; gamepads also work.
-- Reading: Ajustes → Letra switches between the clear "Fina" font (Andika, made for beginning
-  readers; the default) and the retro "Píxel" font, and Ajustes → Mayúsculas shows every text in
+- Ajustes has two levels. The standard list: Micrófono (the setup check, in red while a voice
+  feature is on and it isn't ready), Leer en voz alta, Jugar con la voz, Música, Sonidos, Avanzado,
+  Volver. Avanzado: Letra, Mayúsculas, Teclas, Pantalla completa, Volver (B goes back up).
+- Reading: Ajustes → Avanzado → Letra switches between the clear "Fina" font (Andika, made for beginning
+  readers; the default) and the retro "Píxel" font, and Avanzado → Mayúsculas shows every text in
   capitals (default off). The goal is to teach reading, especially the creature names, so names
   are never cut off: they shrink to fit (`FitText` in `ui.tsx`).
 - Reading names out loud (Ajustes → "Leer en voz alta", `Settings.reading`, **on by default**;
@@ -98,6 +105,11 @@ classic Game Boy monster-collecting games. All creatures, names, art, sounds and
   ("Trinidad" for Trinín) count. 60 % alike is enough, a little less after each miss (55 % at
   least). It never takes a much shorter piece, nor another Vozimón's name (a reading that sounds
   the same as another name, or clearly more like it; a near tie counts for the name on screen).
+  While it listens, the microphone shows how loud it hears (`system/micLevel.ts` → `useMicLevel`,
+  CSS `--lvl` 0..1 and `data-speaking`): the reading microphone fills up and orange rings spread, the
+  voice microphones glow, the mic test has a level bar. On desktop Chrome / Edge a second,
+  echo-cancelled capture is measured; elsewhere (Safari, phones, tablets: a second capture can
+  disturb the recogniser there) the recogniser's events give steps (sound, voice, words).
   What was heard is logged to the console (`[Vozimón] Leer`) and,
   with `?debug`, shown on the syllables screen. Read → stars and
   "¡Muy bien!", saved in `SaveSlot.read` (a star on the page, in the grid and a count in the header).
@@ -108,12 +120,32 @@ classic Game Boy monster-collecting games. All creatures, names, art, sounds and
   confirms with "✓ Lo leyó bien" (with a short note why). So grown-ups find problems before playing, a
   setup check (`checkListening` / `listenStatus` in `listen.ts`, `components/SpeechCheck.tsx`) looks
   at the browser, microphone permission, the on-device Spanish pack, internet and the last listening
-  error (`vozimon.voz.v1`, kept until listening works again). With reading on, the title screen shows
-  a small warning when something is missing (tap it), and starting pops the check up (once per visit;
-  its "Jugar" goes on to the game list); Ajustes → Micrófono always opens the check,
-  which offers "Dar permiso", "Descargar voz" and a "Probar" test. It also opens right after reading
-  is switched on. Child-facing texts here stay a word or
-  two: the children are just learning to read.
+  error (`vozimon.voz.v1`, kept until listening works again). With reading (or playing by voice) on,
+  the title screen shows a small warning when something is missing (tap it), and starting pops the
+  check up (once per visit; its "Jugar" goes on to the game list). The game list has its own
+  microphone item (between "Cargar de un archivo" and "Ajustes"): red "¡Configura el micrófono!" /
+  "Este navegador no escucha" while a voice feature is on and listening isn't ready, else "Micrófono:
+  listo". It and Ajustes → Micrófono always open the check, which offers "Dar permiso", "Descargar
+  voz" and a "Probar" test. It also opens right after reading or playing by voice is switched on.
+  Child-facing texts here stay a word or two: the children are just learning to read.
+- Playing by voice (Ajustes → "Jugar con la voz", `Settings.voice`, **off by default**; switching it
+  on asks a grown-up to confirm, then the mic check opens). While a game is open, one continuous
+  recogniser (`system/voice.ts`) listens for the words of the screen on top; screens register them
+  with `useVoice(spec, layer, active)`, layered like `useInput` (only the top one is asked; words
+  first, then names). Words (`SAY`, matched by sound with `wordScore` ≥ 0.8, so «mamá» isn't «mapa»):
+  in the world «mapa», «vozidex», «tipos» open them; «cerrar», «cancelar», «volver» close the map,
+  Tipos, the Vozidex and the fighter list (on a Vozidex page «volver» goes back to the grid, like B).
+  In battles «atacar»/«luchar», «cambiar», «huir», «lanzar» (easy mode) choose; the choices then pop
+  up as a wide panel with big buttons at the bottom (`.bvoice`, below the health panels) instead of
+  the small corner menu. Calling a Vozimón by its name (`bestName`) picks it in the fighter list
+  (a tired one just beeps) and opens its page in the Vozidex (seen ones; no star: stars only come
+  from «Leer»), where «leer» starts the reading. Messages still go on with a tap or key. Each
+  recognised result acts once (so «mapa» can't close the map it just opened); what was understood
+  shows in an orange speech bubble (`VoiceHeard`) and is logged (`[Vozimón] Voz`); the HUD shows a
+  mic badge (`VoiceBadge`, crossed out when it can't listen; a tap tries again). The music keeps
+  playing; reading a name or the mic test take the microphone over (`claimMic` in
+  `system/recognizer.ts`) and the listener resumes afterwards. It restarts when the browser ends a
+  recognition, backs off after errors and notes them for the setup check.
 - Tipos (type chart): just the list of the 13 types, all on screen without scrolling.
 - Battles: every one of the 151 attacks has its own signature animation and sound
   (`game/attacks.ts` recipe → `components/AttackFx.tsx`): a motion (arc, stream, beam, whirlwind,
@@ -132,8 +164,10 @@ classic Game Boy monster-collecting games. All creatures, names, art, sounds and
   sound) into `preview/vozimon-ataques.mp4` (git-ignored). Needs Firefox 129+ and ffmpeg; options
   `FROM`/`TO`, `WORKERS`, `FPS`, `OUT`, `FIREFOX` (see `scripts/record-attacks.mjs`).
 - Test URLs (throwaway save, nothing stored): `?demo=world|battle|dex|types|map|slots|new|attacks` with
-  optional `&sp=25&mode=easy&biome=4&caught=12&team=1,4,7&font=pixel&upper=1&reading=0&map=santiago`
-  (`biome=7` is the city battle background). `?debug` exposes the world state as `window.__vozi.world`.
+  optional `&sp=25&mode=easy&biome=4&caught=12&team=1,4,7&font=pixel&upper=1&reading=0&voice=1&map=santiago`
+  (`biome=7` is the city battle background). `?debug` exposes the world state as `window.__vozi.world`
+  and `window.__vozi.say('mapa')`, which acts as if that had been heard (playing by voice without a
+  microphone; needs `voice=1`).
 
 ## Brand (`brand/`, repo root)
 
@@ -147,7 +181,8 @@ apple-touch-icon, `manifest.webmanifest` icons), because Vite only serves that f
 
 - `game/` – `creatures.ts` (roster as evolution families; numbers are assigned in list order),
   `elements.ts` (types + type chart), `battle.ts` (damage and catch math), `save.ts` (slots and
-  settings), `reading.ts` (does what was heard sound like the name? + syllables), `rng.ts`.
+  settings), `reading.ts` (does what was heard sound like the name / a command word / which name was
+  called? + syllables), `rng.ts`.
 - `art/` – `raster.ts` (shape rasterizer with automatic outline/shading), `creatureArt.ts`
   (14 archetypes → 56×56 portraits), `sprites.ts` (hand-drawn 16×16 player, generic creatures,
   star ball), `assets.ts` (browser image caches).
@@ -158,14 +193,18 @@ apple-touch-icon, `manifest.webmanifest` icons), because Vite only serves that f
   encounters), `renderer.ts` (canvas drawing).
 - `system/` – `keys.ts` (buttons, default keys, key → button, labels, rebinding), `input.ts` (layered
   input handlers, key capture, keyboard/touch/gamepad source), `audio.ts` (Web Audio SFX, per-type
-  attack sounds, original chiptunes), `files.ts` (save-to-folder / pick-a-file dialogs), `listen.ts`
-  (speech recognition for reading names out loud).
+  attack sounds, original chiptunes), `files.ts` (save-to-folder / pick-a-file dialogs),
+  `recognizer.ts` (the shared Web Speech plumbing: recogniser, languages, on-device Spanish, last
+  failure, who has the microphone), `listen.ts` (reading names out loud, the setup check and mic test),
+  `voice.ts` (playing by voice: the continuous command listener, `useVoice`, `SAY` words),
+  `micLevel.ts` (how loud the microphone hears, for the level animation).
 - `components/` – React screens: TitleScreen, SlotMenu, NewGame, Play (saving/resuming, HUD),
   WorldView, Battle, AttackFx (signature attack effects + KO stars; shapes in `fxParticles.tsx`),
   AttackShowcase (`?demo=attacks`, seekable for recording), CreaturePicker, Dex, ReadAloud
   (reading a name out loud), TypeChart,
-  WorldMapView, SettingsPanel, KeyBindingsPanel, TouchControls, shared `ui.tsx` (Menu, TextBox,
-  KeyCap hints, type badges with icons).
+  WorldMapView, SettingsPanel (standard + Avanzado), SpeechCheck (mic setup check), KeyBindingsPanel,
+  TouchControls, shared `ui.tsx` (Menu with optional `voice`, TextBox, KeyCap hints, type badges with
+  icons, VoiceMic / VoiceBadge / VoiceHeard).
 
 ## Conventions
 

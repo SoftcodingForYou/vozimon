@@ -76,6 +76,7 @@ export interface Settings {
   font: FontStyle;
   upper: boolean; // show every text in capital letters
   reading: boolean; // read names out loud with the microphone (on unless switched off in Ajustes)
+  voice: boolean; // "Jugar con la voz": say «atacar», «mapa», a name... (off until a grown-up switches it on)
   keys: KeyBindings;
 }
 
@@ -373,7 +374,15 @@ export function loadWorldData(slotId: string): unknown {
   }
 }
 
-export const DEFAULT_SETTINGS: Settings = { sound: true, music: true, font: 'fine', upper: false, reading: true, keys: { ...DEFAULT_KEYS } };
+export const DEFAULT_SETTINGS: Settings = {
+  sound: true,
+  music: true,
+  font: 'fine',
+  upper: false,
+  reading: true,
+  voice: false,
+  keys: { ...DEFAULT_KEYS },
+};
 
 export function loadSettings(): Settings {
   try {
@@ -386,6 +395,7 @@ export function loadSettings(): Settings {
       font: s.font === 'pixel' ? 'pixel' : 'fine',
       upper: s.upper === true,
       reading: typeof s.reading === 'boolean' ? s.reading : DEFAULT_SETTINGS.reading,
+      voice: s.voice === true,
       keys: sanitizeBindings(s.keys),
     };
   } catch {
